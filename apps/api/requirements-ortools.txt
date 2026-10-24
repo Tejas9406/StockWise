@@ -1,0 +1,4 @@
+# Optional: exact LP optimum via OR-Tools.
+# The application detects it automatically; without it `settings.solver=auto`
+# silently falls back to the greedy engine and reports that in diagnostics.
+ortools==9.8.3296
