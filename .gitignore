@@ -1,18 +1,27 @@
-# Environment variables & secrets
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+dist-ssr/
+build/
+
+# Environment and sensitive credentials
 .env
-.env.local
-*.env
+.env.*
 !.env.example
+credentials.txt
+credentilas.txt
 
 # Agent instructions & skills (local reference)
 SKILLS/
 StockWise_AI_Team_Docs/
 StockWise_AI_Final_Master_Prompt*
 Trivizon metadata/
-credentilas.txt
-credentials.txt
 
-# Python
+# Python & ML virtual environments and caches
 __pycache__/
 *.py[cod]
 *$py.class
@@ -21,6 +30,7 @@ __pycache__/
 env/
 venv/
 .venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -42,21 +52,28 @@ wheels/
 .pytest_cache/
 
 # Node / Frontend
-node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-dist/
-dist-ssr/
+pnpm-debug.log*
 *.local
 
-# IDEs & OS files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Logs
+logs/
+*.log
+
+# OS and Editor
 .DS_Store
 Thumbs.db
 Desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
