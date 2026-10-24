@@ -1,0 +1,9 @@
+id,name,priority,region,deadline_days
+DST-01,Metro General Hospital,1,Northeast,5
+DST-02,City Distribution Center,2,Midwest,7
+DST-03,Regional Clinic North,1,West,4
+DST-04,Urban Fulfillment Hub,3,South,8
+DST-05,Coastal Medical Center,1,Northeast,3
+DST-06,Inland Warehouse,2,Midwest,6
+DST-07,Mountain Outpost,4,West,10
+DST-08,Southern Cross Dock,3,South,7
