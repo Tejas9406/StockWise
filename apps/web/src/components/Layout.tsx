@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard,
@@ -16,7 +16,7 @@ import { health } from '../lib/api';
 import { cn } from '../lib/utils';
 
 const nav = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/datasets', label: 'Datasets', icon: Database },
   { to: '/planner', label: 'Planner', icon: Calculator },
   { to: '/disruption', label: 'Disruption Lab', icon: Zap },
@@ -34,8 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   });
   const location = useLocation();
 
-  const isActive = (to: string, exact?: boolean) => {
-    if (exact) return location.pathname === to;
+  const isActive = (to: string) => {
     return location.pathname === to || location.pathname.startsWith(to + '/');
   };
 
@@ -47,9 +46,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+            <Link
+              to="/"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white transition-opacity hover:opacity-80"
+              title="Back to overview"
+            >
               <Shield className="h-4 w-4" />
-            </div>
+            </Link>
             <div>
               <div className="text-sm font-semibold leading-none">Pre-Mortem Dispatch</div>
               <div className="text-xs text-slate-500">Resilience planning &amp; recovery</div>
@@ -82,7 +85,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Navigate</div>
             <div className="space-y-1">
               {nav.map((item) => {
-                const active = isActive(item.to, item.exact);
+                const active = isActive(item.to);
                 return (
                   <NavLink
                     key={item.to}
@@ -112,7 +115,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Mobile nav: same destinations, horizontal scroll */}
           <div className="flex gap-1 overflow-x-auto border-b bg-white p-2 md:hidden">
             {nav.map((item) => {
-              const active = isActive(item.to, item.exact);
+              const active = isActive(item.to);
               return (
                 <NavLink
                   key={item.to}

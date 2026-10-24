@@ -67,3 +67,59 @@ test.describe('Pre-Mortem Dispatch — critical workflow', () => {
     await expect(page.getByText('No recovery run yet.')).toBeVisible();
   });
 });
+
+test.describe('Landing page', () => {
+  test('interactive demo tells the disruption story with real numbers', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: /Know what breaks/i })).toBeVisible();
+    await expect(page.getByText(/TRIWIZATHON 2026/i).first()).toBeVisible();
+
+    // Baseline state
+    await expect(page.getByText('100.0%').first()).toBeVisible();
+
+    // Break the network on the landing page itself
+    await page.getByRole('button', { name: /lane closed/i }).click();
+    await expect(page.getByText('89.9%')).toBeVisible();
+
+    // Scoped to the diagram: the workflow cards repeat this figure as a fact chip
+    const diagram = page.getByRole('img', { name: /Distribution network/i });
+    await expect(diagram.getByText('−500 units')).toBeVisible();
+    await expect(page.getByText('$22,620')).toBeVisible();
+
+    // Recover it
+    await page.getByRole('button', { name: /^recovered$/i }).click();
+    await expect(page.getByText('$26,030')).toBeVisible();
+    await expect(page.getByText(/Contingency lane RT-13/i)).toBeVisible();
+  });
+
+  test('routes into the console', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: /run the workflow/i }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole('heading', { name: /Operations Dashboard/i })).toBeVisible();
+  });
+
+  test('sign in hands off to the login route', async ({ page }) => {
+    await page.goto('/');
+    const signIn = page.getByTestId('login-button');
+    await expect(signIn).toBeVisible();
+
+    // Default destination until the Firebase module is merged
+    await expect(signIn).toHaveAttribute('href', '/login');
+    await signIn.click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  });
+
+  test('renders without horizontal overflow on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /Know what breaks/i })).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+});

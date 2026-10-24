@@ -7,6 +7,8 @@ number computed, not narrated.
 > *"If this distribution plan fails under a specific disruption, what is affected, what can be
 > recovered, what will it cost, and what should we do next?"*
 
+![Landing page](docs/screenshots/landing.png)
+
 ---
 
 ## What it actually does
@@ -36,12 +38,25 @@ limiting destination×product rows. It never reports a success it cannot compute
 
 ### Screens
 
+The app opens on a **landing page** (`/`) with an **interactive network model**: switch between
+*baseline → lane closed → recovered* and the diagram, the counters and the note all change to the
+real computed figures. Every CTA routes into the console.
+
 | | |
 |---|---|
-| ![Operations dashboard](docs/screenshots/dashboard.png) | ![Baseline planner](docs/screenshots/planner.png) |
-| **Dashboard** — KPIs, capacity, recent scenario history | **Planner** — allocations, gaps, risk breakdown, solver status |
-| ![Recovery center](docs/screenshots/recovery.png) | ![Scenario comparison](docs/screenshots/compare.png) |
-| **Recovery** — activated lanes, per-shipment changes, residual | **Compare** — absolute values, deltas, deadline exposure |
+| ![Landing — baseline](docs/screenshots/landing.png) | ![Landing — lane closed](docs/screenshots/landing-disrupted.png) |
+| **Baseline** — all lanes open, 100.0% fulfilled | **Lane closed** — RT-03 out, 500 units unserved |
+| ![Landing — recovered](docs/screenshots/landing-recovered.png) | ![Operations dashboard](docs/screenshots/dashboard.png) |
+| **Recovered** — contingency RT-13 absorbs the gap | **Dashboard** — KPIs, capacity, scenario history |
+| ![Baseline planner](docs/screenshots/planner.png) | ![Scenario comparison](docs/screenshots/compare.png) |
+| **Planner** — allocations, gaps, risk breakdown | **Compare** — absolute values, deltas, deadline exposure |
+
+Motion on the landing page: scroll-reveal per section, count-up statistics, an animated closed lane,
+drifting aurora gradients, a marquee of modelled constraints, and cursor spotlights on cards. All of
+it respects `prefers-reduced-motion`.
+
+**Routes:** `/` landing · `/login` (auth placeholder) · `/dashboard` · `/datasets` · `/planner` ·
+`/disruption` · `/recovery` · `/compare` · `/exports`
 
 ---
 
@@ -93,7 +108,7 @@ python -m pytest apps/api/tests -q          # 28 passed
 cd apps/web && npm run build
 
 # Browser E2E (needs both servers running)
-cd apps/web && npx playwright test          # 2 passed
+cd apps/web && npx playwright test          # 5 passed
 ```
 
 The suite asserts invariants, not just "it returned 200":
@@ -107,6 +122,7 @@ The suite asserts invariants, not just "it returned 200":
 - baseline is unchanged after a disruption is simulated against it
 - identical inputs reproduce identical allocations
 - exported CSV totals equal the computed plan totals
+- the landing page's headline numbers match the demo story, and it has no horizontal overflow at 390 px
 
 ---
 
@@ -180,9 +196,24 @@ SOLVER=greedy            # greedy | ortools | auto
 LLM_ENABLED=false
 API_PORT=8000
 MAX_UPLOAD_BYTES=5242880
+VITE_LOGIN_URL=          # frontend only; defaults to /login
 ```
 
 Uploads are capped per file and must be `.csv`. No secrets are required or committed.
+
+### Authentication hand-off
+
+The landing page exposes **Sign in** in the header, the closing CTA and the footer. Authentication
+itself is owned by another workstream (Firebase), so the frontend only needs a destination:
+
+| `VITE_LOGIN_URL` | Result |
+|---|---|
+| unset | Buttons point at `/login`, which renders a placeholder page stating auth is pending |
+| `/login` or a hosted URL | Buttons point there directly |
+
+To merge the Firebase module, either replace [`LoginPlaceholder.tsx`](apps/web/src/pages/LoginPlaceholder.tsx)
+with the real sign-in UI, or leave the repo alone and set `VITE_LOGIN_URL` — no component edits
+required. The console itself needs no account and continues to work either way.
 
 ---
 
@@ -192,8 +223,8 @@ Uploads are capped per file and must be `.csv`. No secrets are required or commi
 - **Not** forecasting. `GET /forecast` returns a labelled moving-average baseline (`model:
   "baseline"`, `fallback: true`). No trained model, no accuracy claim, and the allocator never
   consumes it silently.
-- **Not** multi-user. No auth, no roles — those were explicitly out of scope for a single-operator
-  demo, and adding them would have cost the workflow.
+- **Not** multi-user yet. The UI has a Sign-in entry point, but authentication is a separate
+  Firebase workstream; the console itself needs no account.
 - **Not** LLM-dependent. An LLM may narrate computed results later; it is never the source of
   quantities, costs or feasibility.
 
