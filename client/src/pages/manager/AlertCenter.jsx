@@ -8,6 +8,7 @@ import {
   ExternalLink, Zap, Mail, MessageSquare, Send, CheckCircle2
 } from 'lucide-react';
 import aiService from '../../services/aiService';
+import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const AlertCenter = () => {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ export const AlertCenter = () => {
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [error, setError] = useState(null);
   const [testChannel, setTestChannel] = useState('EMAIL');
-  const [testRecipient, setTestRecipient] = useState('manager@stockwise.ai');
-  const [testMessage, setTestMessage] = useState('Critical Expiry Warning: Batch BATCH-2026-004 expires in 11 days.');
+  const [testRecipient, setTestRecipient] = useState('tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com');
+  const [testMessage, setTestMessage] = useState('🚨 [StockWise FMCG Alert] Batch BAT-MLK-09 (Fresh Whole Milk 1L) at Metro DC expires in 11 days (Nov 5, 2026). 450 units available. Prioritize immediate FEFO transfer to retail stores.');
   const [testStatus, setTestStatus] = useState(null);
   const [sendingTest, setSendingTest] = useState(false);
 
@@ -116,6 +117,18 @@ export const AlertCenter = () => {
           </button>
         </div>
       </div>
+
+      {/* Plain-English Feature Guide */}
+      <FeatureExplainer
+        storageKey="alert_center"
+        badge="Multi-Channel Automation"
+        title="Automated Supply Chain Alerts & Real Expiry Notification Daemon"
+        purpose="Runs a continuous 24/7 background scanner across all inventory batches. When perishable FMCG goods have less than 14 days or 30 days of shelf life remaining, it instantly fires alerts so stock is not wasted."
+        whyItMatters="Stock expiry is the largest profit drain in FMCG distribution. Automated multi-channel notifications ensure warehouse managers and distribution planners act before goods expire, enabling immediate clearance transfers or promotional markdowns."
+        suggestedAction="Use the Live Alert Tester below to verify delivery to configured emails (tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com) or click Launch WhatsApp to send directly to +91 7558417704."
+        actionLink="/manager/recommendations"
+        actionText="Review FEFO Clearance Recommendations"
+      />
 
       {/* 3 Metric Cards matching Quixotic aesthetic */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -251,7 +264,7 @@ export const AlertCenter = () => {
                     type="button"
                     onClick={() => {
                       setTestChannel('EMAIL');
-                      setTestRecipient('manager@stockwise.ai');
+                      setTestRecipient('tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com');
                     }}
                     className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
                       testChannel === 'EMAIL'
@@ -266,7 +279,7 @@ export const AlertCenter = () => {
                     type="button"
                     onClick={() => {
                       setTestChannel('WHATSAPP');
-                      setTestRecipient('+919876543210');
+                      setTestRecipient('+917558417704');
                     }}
                     className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
                       testChannel === 'WHATSAPP'
@@ -316,14 +329,28 @@ export const AlertCenter = () => {
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={sendingTest}
-                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
-              >
-                <Send className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} />
-                <span>{sendingTest ? 'Dispatching...' : `Dispatch Test ${testChannel}`}</span>
-              </button>
+              <div className="space-y-2">
+                <button
+                  type="submit"
+                  disabled={sendingTest}
+                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <Send className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} />
+                  <span>{sendingTest ? 'Dispatching...' : `Dispatch Test ${testChannel}`}</span>
+                </button>
+
+                {testChannel === 'WHATSAPP' && (
+                  <a
+                    href={`https://wa.me/917558417704?text=${encodeURIComponent(testMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>1-Click Launch WhatsApp Web (+91 7558417704)</span>
+                  </a>
+                )}
+              </div>
             </form>
           </div>
 

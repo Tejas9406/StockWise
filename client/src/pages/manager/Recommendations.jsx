@@ -28,6 +28,7 @@ import {
   Package,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const Recommendations = () => {
   const [recommendations, setRecommendations] = useState([]);
@@ -211,6 +212,18 @@ export const Recommendations = () => {
           </Button>
         </div>
       </div>
+
+      {/* Plain-English Feature Guide */}
+      <FeatureExplainer
+        storageKey="recommendations_planner"
+        badge="Stock Replenishment Planner"
+        title="Automated Multi-Echelon Stock Allocation & FEFO Clearance"
+        purpose="Computes the exact number of units to transfer from central distribution warehouses to retail stores. It prioritizes older batches expiring first (FEFO) and eliminates stockouts across all retail locations."
+        whyItMatters="Without an intelligent replenishment planner, distribution managers manually guess quantities across dozens of stores, causing over-shipment, stockouts, and high transport costs. This engine balances vehicle capacity, transport costs, and expiry dates mathematically."
+        suggestedAction="Review the AI recommendations below. Click 'Approve' to instantly dispatch the transfer to the warehouse pick-pack queue, or click 'Edit' to adjust the recommended quantity with reason notes."
+        actionLink="/manager/transfers"
+        actionText="Track Dispatched Transfers"
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

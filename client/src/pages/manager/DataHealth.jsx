@@ -5,6 +5,7 @@ import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
+import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 import {
   Database,
   UploadCloud,
@@ -20,9 +21,11 @@ import {
   ShieldAlert,
   Calendar,
   Check,
+  Sparkles,
 } from 'lucide-react';
 
 const DATASET_TYPES = [
+  { id: 'RETAILER_STOCK', label: 'All-in-One Retailer List', desc: 'Auto-allocates Stores, Products, Batches & Sales directly into Database' },
   { id: 'SALES', label: 'Sales History', desc: 'Point-of-sale store demand transactions' },
   { id: 'INVENTORY', label: 'Current Inventory', desc: 'Warehouse and retail store stock levels' },
   { id: 'PRODUCTS', label: 'Product Catalog', desc: 'SKUs, categories, safety stock, shelf life' },
@@ -40,7 +43,7 @@ export const DataHealth = () => {
   const [activeTab, setActiveTab] = useState('import');
 
   // CSV Upload & Validation states
-  const [selectedDataset, setSelectedDataset] = useState('SALES');
+  const [selectedDataset, setSelectedDataset] = useState('RETAILER_STOCK');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
@@ -140,11 +143,11 @@ export const DataHealth = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Import & Data Health</h1>
-            <Badge variant="emerald" size="sm">Audit & Freshness</Badge>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Data Hub & Retailer Datasets</h1>
+            <Badge variant="emerald" size="sm">Dynamic Ingestion</Badge>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Validate and import offline CSV telemetry, inspect dataset freshness, and audit data lineage.
+            Dynamic CSV Ingestion engine with automatic Store & Product catalog allocation into PostgreSQL.
           </p>
         </div>
 
@@ -160,6 +163,18 @@ export const DataHealth = () => {
           </Button>
         </div>
       </div>
+
+      {/* Plain-English Feature Guide */}
+      <FeatureExplainer
+        storageKey="data_health"
+        badge="Data Pipeline & Dataset Hub"
+        title="Dynamic Retailer Dataset Ingestion & Automatic Database Allocation"
+        purpose="Allows you or retail partners to upload FMCG stock and sales lists in CSV format. The system automatically creates new store locations, registers new product SKUs, updates stock counts, and seeds daily sales with zero manual database entries."
+        whyItMatters="Real distributors receive daily spreadsheets from hundreds of retail outlets. Having an automated ingestion engine means any new product or retail store is immediately integrated into AI demand forecasts and replenishment schedules."
+        suggestedAction="Download the pre-formatted All-in-One Retailer template or upload your retailer file below. Validate the data and click Confirm to immediately refresh the entire platform."
+        actionLink="/manager/recommendations"
+        actionText="View Live Replenishment Planner"
+      />
 
       {/* System Planning Readiness Banner */}
       {healthData && (

@@ -4,43 +4,72 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configure Mail Transport (supports standard SMTP or simulated development mailer)
+// Default multi-stakeholder distribution lists
+export const DEFAULT_EMAIL_RECIPIENTS = [
+  'tejaskarpe06@gmail.com',
+  'purvamarve0508@gmail.com',
+  'shreerajgudade798@gmail.com',
+  'anuradhakadam371@gmail.com',
+];
+
+export const DEFAULT_WHATSAPP_PHONE = '+917558417704';
+
+// Configure Mail Transport (supports Gmail service or standard SMTP or simulation)
 const createMailTransporter = () => {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+
+  if (user && pass) {
+    // If Gmail account, use nodemailer built-in service
+    if (user.includes('@gmail.com') || process.env.GMAIL_USER) {
+      return nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user, pass },
+      });
+    }
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587', 10),
       secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      auth: { user, pass },
     });
   }
-  // Fallback simulator transporter that generates previewable delivery records
   return null;
+};
+
+/**
+ * Generate a WhatsApp Web 1-Click Click-to-Chat Deep Link
+ */
+export const getWhatsAppDeepLink = (phone = DEFAULT_WHATSAPP_PHONE, text = '') => {
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 };
 
 /**
  * Send an email notification for supply chain events
  */
 export const sendEmailAlert = async ({ to, subject, htmlContent, metadata = {} }) => {
-  const recipient = to || process.env.ALERT_EMAIL || 'manager@stockwise.ai';
+  const recipients = to || process.env.ALERT_EMAIL || DEFAULT_EMAIL_RECIPIENTS.join(', ');
   const transporter = createMailTransporter();
 
   try {
     let messageId = `sim_msg_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     let deliveryStatus = 'SIMULATED';
+    let providerDetails = { simulated: true, sentAt: new Date().toISOString() };
 
     if (transporter) {
       const info = await transporter.sendMail({
-        from: process.env.SMTP_FROM || '"StockWise AI Alerts" <alerts@stockwise.ai>',
-        to: recipient,
+        from: process.env.GMAIL_USER || process.env.SMTP_FROM || '"StockWise AI FMCG Alerts" <alerts@stockwise.ai>',
+        to: recipients,
         subject,
         html: htmlContent,
       });
       messageId = info.messageId;
       deliveryStatus = 'DELIVERED';
+      providerDetails = { messageId: info.messageId, response: info.response, sentAt: new Date().toISOString() };
+      console.log(`[Automation Email Delivered] Sent live to: ${recipients}`);
+    } else {
+      console.log(`[Automation Email Simulated] Configured recipients: ${recipients} (Add GMAIL_APP_PASSWORD in server/.env for live dispatch)`);
     }
 
     // Persist to notifications table with EMAIL channel
@@ -54,39 +83,70 @@ export const sendEmailAlert = async ({ to, subject, htmlContent, metadata = {} }
         'EXPIRY_ALERT',
         '/manager/alerts',
         'EMAIL',
-        recipient,
+        recipients,
         deliveryStatus,
-        JSON.stringify({ messageId, sentAt: new Date().toISOString() }),
+        JSON.stringify(providerDetails),
         JSON.stringify(metadata),
       ]
     );
 
-    return { success: true, messageId, deliveryStatus, recipient };
+    return { success: true, messageId, deliveryStatus, recipient: recipients, isLive: Boolean(transporter) };
   } catch (error) {
     console.error('[Automation Email Error]:', error.message);
     await query(
       `INSERT INTO notifications (role, title, message, type, link, channel, recipient_contact, delivery_status, provider_response)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      ['MANAGER', subject, error.message, 'ERROR', '/manager/alerts', 'EMAIL', recipient, 'FAILED', JSON.stringify({ error: error.message })]
+      ['MANAGER', subject, error.message, 'ERROR', '/manager/alerts', 'EMAIL', recipients, 'FAILED', JSON.stringify({ error: error.message })]
     );
     return { success: false, error: error.message };
   }
 };
 
 /**
- * Send a WhatsApp notification for critical stock events
+ * Send a WhatsApp / Telegram notification for critical stock events
  */
 export const sendWhatsAppAlert = async ({ phone, textMessage, metadata = {} }) => {
-  const recipient = phone || process.env.ALERT_WHATSAPP || '+919876543210';
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const fromWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886';
+  const recipient = phone || process.env.ALERT_WHATSAPP || DEFAULT_WHATSAPP_PHONE;
+  const cleanPhone = recipient.replace(/[^0-9]/g, '');
+  const deepLink = getWhatsAppDeepLink(recipient, textMessage);
 
   let deliveryStatus = 'SIMULATED';
-  let providerResponse = { simulated: true, sentAt: new Date().toISOString() };
+  let providerResponse = { simulated: true, sentAt: new Date().toISOString(), deepLink };
 
   try {
-    if (sid && token) {
+    // 1. Try CallMeBot Free WhatsApp API (no paid accounts required)
+    if (process.env.CALLMEBOT_API_KEY) {
+      const botUrl = `https://api.callmebot.com/whatsapp.php?phone=${cleanPhone}&text=${encodeURIComponent(textMessage)}&apikey=${process.env.CALLMEBOT_API_KEY}`;
+      const res = await fetch(botUrl);
+      if (res.ok) {
+        deliveryStatus = 'DELIVERED';
+        providerResponse = { provider: 'CallMeBot', status: 'Delivered to WhatsApp', sentAt: new Date().toISOString(), deepLink };
+      }
+    }
+
+    // 2. Try Telegram Bot API if configured (Free direct instant phone messaging)
+    if (deliveryStatus !== 'DELIVERED' && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+      const tgUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+      const res = await fetch(tgUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          text: `🚨 *StockWise FMCG Notification*\n\n${textMessage}\n\nTarget Phone: ${recipient}`,
+          parse_mode: 'Markdown',
+        }),
+      });
+      if (res.ok) {
+        deliveryStatus = 'DELIVERED';
+        providerResponse = { provider: 'Telegram', status: 'Delivered', sentAt: new Date().toISOString(), deepLink };
+      }
+    }
+
+    // 3. Try Twilio WhatsApp if credentials exist
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const token = process.env.TWILIO_AUTH_TOKEN;
+    const fromWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886';
+    if (deliveryStatus !== 'DELIVERED' && sid && token) {
       const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
       const authHeader = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
       const params = new URLSearchParams();
@@ -105,10 +165,7 @@ export const sendWhatsAppAlert = async ({ phone, textMessage, metadata = {} }) =
       const data = await resp.json();
       if (resp.ok) {
         deliveryStatus = 'DELIVERED';
-        providerResponse = data;
-      } else {
-        deliveryStatus = 'FAILED';
-        providerResponse = data;
+        providerResponse = { provider: 'Twilio', data, deepLink };
       }
     }
 
@@ -126,14 +183,21 @@ export const sendWhatsAppAlert = async ({ phone, textMessage, metadata = {} }) =
         recipient,
         deliveryStatus,
         JSON.stringify(providerResponse),
-        JSON.stringify(metadata),
+        JSON.stringify({ ...metadata, deepLink }),
       ]
     );
 
-    return { success: deliveryStatus !== 'FAILED', deliveryStatus, recipient, providerResponse };
+    return {
+      success: true,
+      deliveryStatus,
+      recipient,
+      deepLink,
+      providerResponse,
+      isLive: deliveryStatus === 'DELIVERED',
+    };
   } catch (error) {
     console.error('[Automation WhatsApp Error]:', error.message);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message, deepLink };
   }
 };
 

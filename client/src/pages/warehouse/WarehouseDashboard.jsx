@@ -17,6 +17,7 @@ import {
   PackageCheck,
   Building2,
 } from 'lucide-react';
+import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const WarehouseDashboard = () => {
   const [data, setData] = useState(null);
@@ -75,6 +76,18 @@ export const WarehouseDashboard = () => {
           </Link>
         </div>
       </div>
+
+      {/* Plain-English Feature Guide */}
+      <FeatureExplainer
+        storageKey="warehouse_dashboard"
+        badge="Warehouse Execution Hub"
+        title="Central Distribution Center Pick, Pack & Dispatch Operations"
+        purpose="Provides warehouse personnel with live visibility into pending transfer orders approved by HQ. It guides workers on which batches to pick first (FEFO) and queues packages for transport loading."
+        whyItMatters="Delays in physical warehouse fulfillment lead to delivery stockouts at stores. Having clear pick lists and dispatch queues ensures zero order confusion and accurate physical stock counts."
+        suggestedAction="Review pending picks in the Pick List, mark items as packed, and dispatch vehicles when loading is complete."
+        actionLink="/warehouse/pick-list"
+        actionText="Open Pick List Queue"
+      />
 
       {/* 5 Core Warehouse Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

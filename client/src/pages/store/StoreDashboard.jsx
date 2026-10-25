@@ -17,6 +17,7 @@ import {
   Store as StoreIcon,
   Plus,
 } from 'lucide-react';
+import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const StoreDashboard = () => {
   const [data, setData] = useState(null);
@@ -75,6 +76,18 @@ export const StoreDashboard = () => {
           </Link>
         </div>
       </div>
+
+      {/* Plain-English Feature Guide */}
+      <FeatureExplainer
+        storageKey="store_dashboard"
+        badge="Retail Store Command"
+        title="Retail Outlet Inventory, Receiving & Shelf Management"
+        purpose="Enables store managers to inspect on-shelf stock, confirm receipt of incoming shipments from central distribution warehouses, and log daily point-of-sale customer transactions."
+        whyItMatters="Accurate retail store counts feed directly into the central AI demand forecasting engine. Confirming shipments immediately updates system inventory and prevents unnecessary duplicate replenishment orders."
+        suggestedAction="Confirm receipt of any incoming deliveries in Receive Stock or log daily transactions in Record Sale."
+        actionLink="/store/receive"
+        actionText="Confirm Incoming Stock Receipt"
+      />
 
       {/* 5 Core Store Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
