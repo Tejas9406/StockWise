@@ -26,7 +26,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const DemandForecast = () => {
   const [products, setProducts] = useState([]);
@@ -240,18 +239,6 @@ export const DemandForecast = () => {
           </Link>
         </div>
       </div>
-
-      {/* Plain-English Feature Guide */}
-      <FeatureExplainer
-        storageKey="demand_forecast"
-        badge="Demand Intelligence"
-        title="AI-Powered Customer Demand & Sales Velocity Forecast"
-        purpose="Forecasts future customer demand across your retail stores and products. It computes expected daily sales velocity, calculates safety buffers, and establishes high/low confidence boundaries using your historical point-of-sale data."
-        whyItMatters="In the FMCG industry, over-stocking leads to spoiled batches and financial write-offs, while under-stocking leads to lost customer sales. This forecast ensures you order and ship exactly what each store will sell."
-        suggestedAction="Use the dropdowns below to inspect demand curves for different SKUs and stores. Then click 'Run Allocation Planner' to generate optimized stock transfers."
-        actionLink="/manager/recommendations"
-        actionText="Proceed to Allocation Planner"
-      />
 
       {/* Filter Toolbar */}
       <Card className="p-4 bg-white shadow-sm border border-slate-200/80">

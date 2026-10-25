@@ -27,7 +27,6 @@ import {
   Building2,
   Filter,
 } from 'lucide-react';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 import { AnimatedCounter } from '../../components/common/AnimatedCounter';
 import { QuickUploadModal } from '../../components/common/QuickUploadModal';
 
@@ -291,18 +290,6 @@ export const ManagerDashboard = () => {
           </button>
         </div>
       </div>
-
-      {/* Plain-English Feature Guide */}
-      <FeatureExplainer
-        storageKey="manager_dashboard"
-        badge="Command Center"
-        title="Distribution Operations & Inventory Optimization Command"
-        purpose="Provides a single real-time executive cockpit for your entire FMCG supply chain. Monitor live inventory valuations, monthly sales velocity, perishable batch expiry countdowns, and automated dispatch logs across all warehouses and retail stores."
-        whyItMatters="FMCG distribution involves rapid stock turnover. Having total visibility prevents warehouse bottlenecks, highlights low-stock retail stores before stockouts happen, and ensures expiring stock is transferred to high-velocity stores using FEFO principles."
-        suggestedAction="Inspect near-expiry batches below, review auto-triggered alerts, or upload new retailer lists in the Data Hub to dynamically update the entire system."
-        actionLink="/manager/data-health"
-        actionText="Upload Retailer Dataset"
-      />
 
       {/* 2. Top Metric Cards Grid (3 Columns matching Quixotic Dashboard) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

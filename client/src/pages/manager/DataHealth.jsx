@@ -5,7 +5,6 @@ import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 import {
   Database,
   UploadCloud,
@@ -163,18 +162,6 @@ export const DataHealth = () => {
           </Button>
         </div>
       </div>
-
-      {/* Plain-English Feature Guide */}
-      <FeatureExplainer
-        storageKey="data_health"
-        badge="Data Pipeline & Dataset Hub"
-        title="Dynamic Retailer Dataset Ingestion & Automatic Database Allocation"
-        purpose="Allows you or retail partners to upload FMCG stock and sales lists in CSV format. The system automatically creates new store locations, registers new product SKUs, updates stock counts, and seeds daily sales with zero manual database entries."
-        whyItMatters="Real distributors receive daily spreadsheets from hundreds of retail outlets. Having an automated ingestion engine means any new product or retail store is immediately integrated into AI demand forecasts and replenishment schedules."
-        suggestedAction="Download the pre-formatted All-in-One Retailer template or upload your retailer file below. Validate the data and click Confirm to immediately refresh the entire platform."
-        actionLink="/manager/recommendations"
-        actionText="View Live Replenishment Planner"
-      />
 
       {/* System Planning Readiness Banner */}
       {healthData && (

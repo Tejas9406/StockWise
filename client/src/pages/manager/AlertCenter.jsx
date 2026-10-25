@@ -8,7 +8,6 @@ import {
   ExternalLink, Zap, Mail, MessageSquare, Send, CheckCircle2, Bot
 } from 'lucide-react';
 import aiService from '../../services/aiService';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const AlertCenter = () => {
   const navigate = useNavigate();
@@ -122,18 +121,6 @@ export const AlertCenter = () => {
           </button>
         </div>
       </div>
-
-      {/* Plain-English Feature Guide */}
-      <FeatureExplainer
-        storageKey="alert_center"
-        badge="Multi-Channel Automation"
-        title="Automated Supply Chain Alerts & Real Expiry Notification Daemon"
-        purpose="Runs a continuous 24/7 background scanner across all inventory batches. When perishable FMCG goods have less than 14 days or 30 days of shelf life remaining, it instantly fires alerts so stock is not wasted."
-        whyItMatters="Stock expiry is the largest profit drain in FMCG distribution. Automated multi-channel notifications ensure warehouse managers and distribution planners act before goods expire, enabling immediate clearance transfers or promotional markdowns."
-        suggestedAction="Use the Live Alert Tester below to verify delivery to configured emails (tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com) or click Launch WhatsApp to send directly to +91 7558417704."
-        actionLink="/manager/recommendations"
-        actionText="Review FEFO Clearance Recommendations"
-      />
 
       {/* 3 Metric Cards matching Quixotic aesthetic */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

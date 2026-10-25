@@ -25,7 +25,6 @@ import {
   Clock,
   Package,
 } from 'lucide-react';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
 export const Transfers = () => {
   const [transfers, setTransfers] = useState([]);
@@ -242,18 +241,6 @@ export const Transfers = () => {
           </Button>
         </div>
       </div>
-
-      {/* Plain-English Feature Guide */}
-      <FeatureExplainer
-        storageKey="stock_transfers"
-        badge="Physical Goods Movement"
-        title="Stock Transfer Pipeline & Transit Tracking"
-        purpose="Tracks physical goods from the moment they are approved until they arrive safely at the retail destination. It coordinates the warehouse pick-pack team, carrier logistics, and store receiving staff."
-        whyItMatters="Transfer requests can get lost between warehouse loading bays and delivery trucks. This digital tracking pipeline ensures complete accountability at every step: APPROVED → PICKED → PACKED → DISPATCHED → RECEIVED."
-        suggestedAction="Click 'Create Transfer' to dispatch stock manually, or review live transit status for shipments en route."
-        actionLink="/manager/recommendations"
-        actionText="Review AI Replenishment Queue"
-      />
 
       {/* Filter Tabs */}
       <div className="flex border-b border-slate-200 gap-2 sm:gap-6 text-xs font-semibold overflow-x-auto">
