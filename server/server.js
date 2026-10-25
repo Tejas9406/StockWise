@@ -22,7 +22,8 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import importRoutes from './routes/importRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import automationRoutes from './routes/automationRoutes.js';
-import { startAutomationDaemon } from './services/automationService.js';
+import { startAutomationDaemon, stopAutomationDaemon } from './services/automationService.js';
+import { startTelegramPolling, stopTelegramPolling } from './services/telegramService.js';
 
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
@@ -109,9 +110,21 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Authentication: Firebase Auth + Admin SDK Token Verification`);
     console.log(`AIML Microservice: Connected via FastAPI Gateway`);
     console.log(`Automation: Multi-Channel Expiry Daemon (Email & WhatsApp) Active`);
+    console.log(`Telegram Bot: Official Free Bot API Integration Active`);
     console.log(`=======================================================`);
     startAutomationDaemon();
+    startTelegramPolling();
   });
+
+  const handleShutdown = () => {
+    console.log('[Server] Gracefully shutting down...');
+    stopAutomationDaemon();
+    stopTelegramPolling();
+    process.exit(0);
+  };
+
+  process.on('SIGINT', handleShutdown);
+  process.on('SIGTERM', handleShutdown);
 }
 
 export default app;

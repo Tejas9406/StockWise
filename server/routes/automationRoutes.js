@@ -4,6 +4,12 @@ import {
   sendEmailAlert,
   sendWhatsAppAlert,
 } from '../services/automationService.js';
+import {
+  getTelegramStatus,
+  sendTelegramMessage,
+  broadcastTelegramAlert,
+  processTelegramUpdates,
+} from '../services/telegramService.js';
 import { query } from '../config/db.js';
 
 const router = express.Router();
@@ -112,9 +118,94 @@ router.post('/send-test', async (req, res, next) => {
       return res.status(200).json({ success: true, data: waResult });
     }
 
-    return res.status(400).json({ success: false, message: 'Invalid channel specified. Use EMAIL or WHATSAPP.' });
+    if (channel === 'TELEGRAM') {
+      const text = `🧪 *StockWise AI Test Dispatch*\n\n${message || 'Real-time alert delivery verified via Telegram Bot API.'}\n\n🕒 _${new Date().toLocaleString()}_`;
+      if (recipient) {
+        const tgRes = await sendTelegramMessage(recipient, text);
+        return res.status(200).json({ success: tgRes.success, data: tgRes });
+      } else {
+        const broadcastRes = await broadcastTelegramAlert({
+          title: 'System Test Alert',
+          message: message || 'System connectivity verified.',
+          severity: 'INFO',
+        });
+        return res.status(200).json({ success: broadcastRes.success, data: broadcastRes });
+      }
+    }
+
+    return res.status(400).json({ success: false, message: 'Invalid channel specified. Use EMAIL, WHATSAPP, or TELEGRAM.' });
   } catch (error) {
     next(error);
+  }
+});
+
+/**
+ * Get Telegram bot integration status
+ */
+router.get('/telegram/status', async (req, res, next) => {
+  try {
+    const status = await getTelegramStatus();
+    return res.status(200).json({
+      success: true,
+      data: status,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Send a dedicated test message via Telegram
+ */
+router.post('/telegram/test', async (req, res, next) => {
+  try {
+    const { chatId, message } = req.body;
+    const testText = `🧪 *StockWise AI On-Demand Test*\n\n${message || 'Operational notification verified from StockWise dashboard.'}\n\n📡 Free Telegram Bot API\n🕒 ${new Date().toLocaleString()}`;
+
+    if (chatId) {
+      const tgRes = await sendTelegramMessage(chatId, testText);
+      if (!tgRes.success) {
+        return res.status(400).json({
+          success: false,
+          error: tgRes.error,
+          message: 'Failed to deliver message via Telegram',
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Telegram test message confirmed delivered',
+        data: tgRes,
+      });
+    }
+
+    const broadcastRes = await broadcastTelegramAlert({
+      title: 'Dashboard Test Alert',
+      message: message || 'Manual test triggered from dashboard.',
+      severity: 'INFO',
+    });
+
+    return res.status(200).json({
+      success: broadcastRes.success,
+      message: broadcastRes.deliveredCount > 0 ? `Delivered to ${broadcastRes.deliveredCount} subscriber(s)` : 'No active subscribers found',
+      data: broadcastRes,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Webhook endpoint for production deployment
+ */
+router.post('/telegram/webhook', async (req, res, next) => {
+  try {
+    if (req.body && req.body.update_id) {
+      await processTelegramUpdates([req.body]);
+    }
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('[Telegram Webhook Error]:', error.message);
+    return res.status(200).json({ ok: true }); // Always return 200 to Telegram
   }
 });
 

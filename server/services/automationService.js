@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { query } from '../config/db.js';
+import { broadcastTelegramAlert } from './telegramService.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -124,21 +125,16 @@ export const sendWhatsAppAlert = async ({ phone, textMessage, metadata = {} }) =
       }
     }
 
-    // 2. Try Telegram Bot API if configured (Free direct instant phone messaging)
-    if (deliveryStatus !== 'DELIVERED' && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-      const tgUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-      const res = await fetch(tgUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: process.env.TELEGRAM_CHAT_ID,
-          text: `🚨 *StockWise FMCG Notification*\n\n${textMessage}\n\nTarget Phone: ${recipient}`,
-          parse_mode: 'Markdown',
-        }),
+    // 2. Broadcast to Telegram Bot Subscribers
+    if (process.env.TELEGRAM_BOT_TOKEN) {
+      const tgRes = await broadcastTelegramAlert({
+        title: 'FMCG Notification',
+        message: textMessage,
+        severity: 'WARNING',
       });
-      if (res.ok) {
+      if (tgRes && tgRes.deliveredCount > 0) {
         deliveryStatus = 'DELIVERED';
-        providerResponse = { provider: 'Telegram', status: 'Delivered', sentAt: new Date().toISOString(), deepLink };
+        providerResponse = { provider: 'Telegram', status: `Delivered to ${tgRes.deliveredCount} subscriber(s)`, sentAt: new Date().toISOString(), deepLink };
       }
     }
 

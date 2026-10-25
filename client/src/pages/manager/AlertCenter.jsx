@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   Bell, AlertTriangle, AlertCircle, ShieldAlert, Sparkles,
   ArrowRight, RefreshCw, CheckCircle, Clock, Package, Filter,
-  ExternalLink, Zap, Mail, MessageSquare, Send, CheckCircle2
+  ExternalLink, Zap, Mail, MessageSquare, Send, CheckCircle2, Bot
 } from 'lucide-react';
 import aiService from '../../services/aiService';
 import { FeatureExplainer } from '../../components/common/FeatureExplainer';
@@ -16,10 +16,11 @@ export const AlertCenter = () => {
   const [scanning, setScanning] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [automationStats, setAutomationStats] = useState(null);
+  const [telegramInfo, setTelegramInfo] = useState(null);
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [error, setError] = useState(null);
-  const [testChannel, setTestChannel] = useState('EMAIL');
-  const [testRecipient, setTestRecipient] = useState('tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com');
+  const [testChannel, setTestChannel] = useState('TELEGRAM');
+  const [testRecipient, setTestRecipient] = useState('');
   const [testMessage, setTestMessage] = useState('🚨 [StockWise FMCG Alert] Batch BAT-MLK-09 (Fresh Whole Milk 1L) at Metro DC expires in 11 days (Nov 5, 2026). 450 units available. Prioritize immediate FEFO transfer to retail stores.');
   const [testStatus, setTestStatus] = useState(null);
   const [sendingTest, setSendingTest] = useState(false);
@@ -32,9 +33,10 @@ export const AlertCenter = () => {
     try {
       setLoading(true);
       setError(null);
-      const [alertRes, autoRes] = await Promise.allSettled([
+      const [alertRes, autoRes, tgRes] = await Promise.allSettled([
         aiService.getAlerts(),
         axios.get('/api/automation/stats'),
+        axios.get('/api/automation/telegram/status'),
       ]);
 
       if (alertRes.status === 'fulfilled' && alertRes.value?.success) {
@@ -42,6 +44,9 @@ export const AlertCenter = () => {
       }
       if (autoRes.status === 'fulfilled' && autoRes.value?.data?.success) {
         setAutomationStats(autoRes.value.data.data);
+      }
+      if (tgRes.status === 'fulfilled' && tgRes.value?.data?.success) {
+        setTelegramInfo(tgRes.value.data.data);
       }
     } catch (err) {
       console.error('Failed to load intelligence alerts:', err);
@@ -259,20 +264,20 @@ export const AlertCenter = () => {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                   Delivery Channel
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      setTestChannel('EMAIL');
-                      setTestRecipient('tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com');
+                      setTestChannel('TELEGRAM');
+                      setTestRecipient('');
                     }}
                     className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
-                      testChannel === 'EMAIL'
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-extrabold'
+                      testChannel === 'TELEGRAM'
+                        ? 'bg-sky-50 border-sky-300 text-sky-800 font-extrabold'
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <Mail className="w-3.5 h-3.5 text-blue-600" /> Email
+                    <Bot className="w-3.5 h-3.5 text-sky-600" /> Telegram
                   </button>
 
                   <button
@@ -289,20 +294,65 @@ export const AlertCenter = () => {
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('EMAIL');
+                      setTestRecipient('tejaskarpe06@gmail.com, purvamarve0508@gmail.com, shreerajgudade798@gmail.com');
+                    }}
+                    className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
+                      testChannel === 'EMAIL'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-extrabold'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Mail className="w-3.5 h-3.5 text-blue-600" /> Email
+                  </button>
                 </div>
               </div>
 
+              {testChannel === 'TELEGRAM' && (
+                <div className="p-3 bg-sky-50/70 border border-sky-200 rounded-xl space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sky-900 flex items-center gap-1.5">
+                      <Bot className="w-3.5 h-3.5 text-sky-600" />
+                      @StockWise_Alertss_bot
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-200/80 text-sky-800">
+                      {telegramInfo?.isPolling ? '● Live Polling' : 'Connected'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-sky-700">
+                    Active subscribers: <strong>{telegramInfo?.activeSubscribers || 0}</strong>. Open the bot on Telegram and send <code>/start</code> to pair your account.
+                  </p>
+                  <a
+                    href="https://t.me/StockWise_Alertss_bot"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 hover:underline pt-0.5"
+                  >
+                    <ExternalLink className="w-3 h-3" /> Open @StockWise_Alertss_bot in Telegram
+                  </a>
+                </div>
+              )}
+
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Recipient Contact
+                  {testChannel === 'TELEGRAM' ? 'Recipient Chat ID (Leave blank to broadcast)' : 'Recipient Contact'}
                 </label>
                 <input
                   type="text"
                   value={testRecipient}
                   onChange={(e) => setTestRecipient(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
-                  placeholder={testChannel === 'EMAIL' ? 'email@example.com' : '+91XXXXXXXXXX'}
-                  required
+                  placeholder={
+                    testChannel === 'TELEGRAM'
+                      ? 'Broadcast to all subscribers (or enter Chat ID)'
+                      : testChannel === 'EMAIL'
+                      ? 'email@example.com'
+                      : '+91XXXXXXXXXX'
+                  }
                 />
               </div>
 
