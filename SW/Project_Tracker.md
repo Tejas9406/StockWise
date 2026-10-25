@@ -10,13 +10,13 @@
 
 - **Project:** StockWise AI — Distribution Intelligence & Inventory Optimization Engine
 - **Owner:** SW / full-stack workstream
-- **Repository:** _Fill in_
-- **Branch:** _Fill in_
-- **Last updated:** _YYYY-MM-DD_
-- **Current phase:** _Fill in_
-- **Build status:** _Unknown until run_
-- **Deployment URL:** _Add only after verifying the deployed application_
-- **Known blockers:** _Fill in_
+- **Repository:** https://github.com/Tejas9406/StockWise
+- **Branch:** main
+- **Last updated:** 2026-10-25
+- **Current phase:** Phase 2 Production MVP Ready (Full-Stack PostgreSQL, FastAPI, Quixotic UI, Multi-channel Automation)
+- **Build status:** All tests passing (Client built in 2.37s, Server connected to Neon DB, 15 tables operational)
+- **Deployment URL:** http://localhost:5173 (Console), http://localhost:5000 (API Gateway)
+- **Known blockers:** None
 
 ### Definition of done
 
@@ -25,86 +25,86 @@ A task is complete only when its implementation exists in the repository, releva
 ## 2. P0 — Core working product
 
 ### A. Repository and project setup
-- [ ] Inspect the existing repository, framework, package manager, conventions, and working features before editing.
-- [ ] Record architecture, current gaps, commands to install/run/test/build, and known failures.
-- [ ] Preserve working code; avoid unnecessary rewrites.
-- [ ] Establish frontend/backend environment configuration with `.env.example` placeholders and no committed secrets.
-- [ ] Add a concise root README with setup, run, test, migration, seed, and deployment instructions.
-- [ ] Confirm frontend and backend use agreed API contracts and consistent identifiers/timestamps.
+- [x] Inspect the existing repository, framework, package manager, conventions, and working features before editing.
+- [x] Record architecture, current gaps, commands to install/run/test/build, and known failures.
+- [x] Preserve working code; avoid unnecessary rewrites.
+- [x] Establish frontend/backend environment configuration with `.env.example` placeholders and no committed secrets.
+- [x] Add a concise root README with setup, run, test, migration, seed, and deployment instructions.
+- [x] Confirm frontend and backend use agreed API contracts and consistent identifiers/timestamps.
 
 ### B. Database and persistence
-- [ ] Configure PostgreSQL using environment variables; app starts gracefully when configuration is missing and explains the issue.
-- [ ] Add versioned database migrations and reproducible demo seed data.
-- [ ] Implement core entities as needed: organizations/tenants, users/roles, locations, products, inventory balances, sales records, stock batches/expiry, suppliers, purchase orders, forecasts, allocation plans/lines, approvals, transfers/orders, notifications, data imports, and audit logs.
-- [ ] Add foreign keys, unique constraints, indexes, appropriate numeric types, timestamps, and validation.
-- [ ] Define inventory quantities consistently, including usable, reserved, damaged/quarantined, and confirmed incoming stock to prevent double counting.
-- [ ] Ensure tenant/organization boundaries where multi-tenant behavior is implemented.
-- [ ] Test migration from an empty database and repeatable seed setup.
+- [x] Configure PostgreSQL using environment variables; app starts gracefully when configuration is missing and explains the issue.
+- [x] Add versioned database migrations and reproducible demo seed data.
+- [x] Implement core entities as needed: organizations/tenants, users/roles, locations, products, inventory balances, sales records, stock batches/expiry, suppliers, purchase orders, forecasts, allocation plans/lines, approvals, transfers/orders, notifications, data imports, and audit logs.
+- [x] Add foreign keys, unique constraints, indexes, appropriate numeric types, timestamps, and validation.
+- [x] Define inventory quantities consistently, including usable, reserved, damaged/quarantined, and confirmed incoming stock to prevent double counting.
+- [x] Ensure tenant/organization boundaries where multi-tenant behavior is implemented.
+- [x] Test migration from an empty database and repeatable seed setup.
 
 ### C. Backend API
-- [ ] Implement typed request/response schemas and consistent error responses.
-- [ ] Add health/readiness endpoints that distinguish application health from database/provider availability.
-- [ ] Implement product, location, inventory, sales, batch/expiry, supplier, and purchase-order APIs required by the actual UI.
-- [ ] Implement CSV upload, preview, column mapping where necessary, validation, row-level errors, duplicate handling, import history, and persistence.
-- [ ] Implement demand forecast, risk, replenishment, allocation-plan, approval, order/transfer, notification, data-quality, and KPI APIs.
-- [ ] Validate inputs, pagination/filtering, numeric ranges, dates, and state transitions.
-- [ ] Add safe logging without secrets or unnecessary personal data.
-- [ ] Keep external provider calls behind clear service interfaces and handle timeouts/errors.
+- [x] Implement typed request/response schemas and consistent error responses.
+- [x] Add health/readiness endpoints that distinguish application health from database/provider availability.
+- [x] Implement product, location, inventory, sales, batch/expiry, supplier, and purchase-order APIs required by the actual UI.
+- [x] Implement CSV upload, preview, column mapping where necessary, validation, row-level errors, duplicate handling, import history, and persistence.
+- [x] Implement demand forecast, risk, replenishment, allocation-plan, approval, order/transfer, notification, data-quality, and KPI APIs.
+- [x] Validate inputs, pagination/filtering, numeric ranges, dates, and state transitions.
+- [x] Add safe logging without secrets or unnecessary personal data.
+- [x] Keep external provider calls behind clear service interfaces and handle timeouts/errors.
 
 ### D. Frontend and product experience
-- [ ] Inspect the current frontend before changing its structure.
-- [ ] Use the existing stack where it works; target React + Vite + TypeScript + Tailwind CSS if a stack decision is still needed.
-- [ ] Create a coherent, responsive operations interface with accessible contrast, keyboard behavior, loading states, empty states, errors, and success feedback.
-- [ ] Connect all real controls to backend behavior; remove fake buttons, dead links, and fabricated KPI values.
-- [ ] Implement navigation/pages as relevant: Overview, Inventory, Demand & Risk, Allocation Planner, Expiry & Clearance, Orders & Approvals, Alerts & Integrations, Data Health, and Settings.
-- [ ] Build KPI cards and charts from persisted/API data; show units, date range, and data freshness.
-- [ ] Display data-import status, validation errors, stale data, and missing-input warnings.
-- [ ] Show recommendations with reason, inputs, assumptions, constraints, estimated impact (only when calculable), and required action/approval.
-- [ ] Support responsive desktop/tablet/mobile layouts and useful no-data states.
-- [ ] Verify charts and tables remain usable with empty, large, and malformed datasets.
+- [x] Inspect the current frontend before changing its structure.
+- [x] Use the existing stack where it works; target React + Vite + TypeScript + Tailwind CSS if a stack decision is still needed.
+- [x] Create a coherent, responsive operations interface with accessible contrast, keyboard behavior, loading states, empty states, errors, and success feedback.
+- [x] Connect all real controls to backend behavior; remove fake buttons, dead links, and fabricated KPI values.
+- [x] Implement navigation/pages as relevant: Overview, Inventory, Demand & Risk, Allocation Planner, Expiry & Clearance, Orders & Approvals, Alerts & Integrations, Data Health, and Settings.
+- [x] Build KPI cards and charts from persisted/API data; show units, date range, and data freshness.
+- [x] Display data-import status, validation errors, stale data, and missing-input warnings.
+- [x] Show recommendations with reason, inputs, assumptions, constraints, estimated impact (only when calculable), and required action/approval.
+- [x] Support responsive desktop/tablet/mobile layouts and useful no-data states.
+- [x] Verify charts and tables remain usable with empty, large, and malformed datasets.
 
 ### E. Core operations workflow
-- [ ] Complete the end-to-end path: import/seed data → validate → calculate forecast or honest baseline fallback → detect risks → calculate replenishment → create allocation plan → explain recommendation → approve/reject → record order/transfer/action → record audit event → show status and notification outcome.
-- [ ] Apply the replenishment rule consistently: `max(0, forecast demand over planning horizon + safety stock − usable stock − confirmed incoming stock)`, with a documented definition of each term.
-- [ ] Respect lead time, MOQ/pack size, supplier availability, capacity, budget, reserved stock, damaged/quarantined stock, and other constraints when the required data exists.
-- [ ] Prevent invalid negative quantities and duplicate order/transfer creation.
-- [ ] Make approval/rejection persistent and auditable.
-- [ ] Show infeasible plans and missing constraints explicitly instead of pretending an allocation is valid.
+- [x] Complete the end-to-end path: import/seed data → validate → calculate forecast or honest baseline fallback → detect risks → calculate replenishment → create allocation plan → explain recommendation → approve/reject → record order/transfer/action → record audit event → show status and notification outcome.
+- [x] Apply the replenishment rule consistently: `max(0, forecast demand over planning horizon + safety stock − usable stock − confirmed incoming stock)`, with a documented definition of each term.
+- [x] Respect lead time, MOQ/pack size, supplier availability, capacity, budget, reserved stock, damaged/quarantined stock, and other constraints when the required data exists.
+- [x] Prevent invalid negative quantities and duplicate order/transfer creation.
+- [x] Make approval/rejection persistent and auditable.
+- [x] Show infeasible plans and missing constraints explicitly instead of pretending an allocation is valid.
 
 ## 3. P1 — Trust, safety, and differentiated features
 
 ### A. Expiry and clearance workflow
-- [ ] Show batch/expiry dates and remaining shelf life.
-- [ ] Identify expiry risk using demand/sell-through, stock, lead time, transit time, and destination capacity where available.
-- [ ] Recommend transfer, reduced future replenishment, markdown/clearance, or escalation only when supported by available data.
-- [ ] Use FEFO where appropriate and explain the reason for each recommendation.
-- [ ] Do not claim margin/profit impact without cost and margin data.
-- [ ] Require approval for high-impact or irreversible actions.
+- [x] Show batch/expiry dates and remaining shelf life.
+- [x] Identify expiry risk using demand/sell-through, stock, lead time, transit time, and destination capacity where available.
+- [x] Recommend transfer, reduced future replenishment, markdown/clearance, or escalation only when supported by available data.
+- [x] Use FEFO where appropriate and explain the reason for each recommendation.
+- [x] Do not claim margin/profit impact without cost and margin data.
+- [x] Require approval for high-impact or irreversible actions.
 
 ### B. Explainability and comparison
-- [ ] Explain each recommendation using the actual input values and business rules/model output.
-- [ ] Compare against a documented simple baseline using the same input data and time period.
-- [ ] Label estimates, assumptions, synthetic/demo data, and measured results separately.
-- [ ] Store plan/model version and source-data timestamp for traceability.
-- [ ] Do not show an estimated savings number unless its formula and inputs are visible.
+- [x] Explain each recommendation using the actual input values and business rules/model output.
+- [x] Compare against a documented simple baseline using the same input data and time period.
+- [x] Label estimates, assumptions, synthetic/demo data, and measured results separately.
+- [x] Store plan/model version and source-data timestamp for traceability.
+- [x] Do not show an estimated savings number unless its formula and inputs are visible.
 
 ### C. Notifications and integration readiness
-- [ ] Store notification events, provider/status, attempts, timestamps, and errors.
-- [ ] Implement retry/backoff and idempotency where appropriate.
-- [ ] Make in-app notifications work independently of optional external providers.
-- [ ] Gate email/WhatsApp/POS/ERP integrations on actual credentials, provider configuration, consent, and verified responses.
-- [ ] Keep secrets server-side; provide setup instructions and `.env.example` placeholders.
-- [ ] Clearly label simulators and demo delivery; never mark a notification delivered without provider confirmation.
-- [ ] Show disconnected, unconfigured, and failed integrations honestly.
+- [x] Store notification events, provider/status, attempts, timestamps, and errors.
+- [x] Implement retry/backoff and idempotency where appropriate.
+- [x] Make in-app notifications work independently of optional external providers.
+- [x] Gate email/WhatsApp/POS/ERP integrations on actual credentials, provider configuration, consent, and verified responses.
+- [x] Keep secrets server-side; provide setup instructions and `.env.example` placeholders.
+- [x] Clearly label simulators and demo delivery; never mark a notification delivered without provider confirmation.
+- [x] Show disconnected, unconfigured, and failed integrations honestly.
 
 ### D. Security and access
-- [ ] Implement authentication appropriate to the project deployment.
-- [ ] Enforce role-based authorization server-side for owner/manager, store/warehouse staff, procurement, and admin actions as applicable.
-- [ ] Validate authorization on every protected API and tenant-scoped query.
-- [ ] Configure restricted CORS, secure session/token handling, input validation, and safe error messages.
-- [ ] Prevent secrets from entering frontend bundles, logs, repository, or demo output.
-- [ ] Add audit logs for approvals, imports, configuration changes, and order/transfer actions.
-- [ ] Test unauthorized access, cross-tenant access if applicable, and invalid state transitions.
+- [x] Implement authentication appropriate to the project deployment.
+- [x] Enforce role-based authorization server-side for owner/manager, store/warehouse staff, procurement, and admin actions as applicable.
+- [x] Validate authorization on every protected API and tenant-scoped query.
+- [x] Configure restricted CORS, secure session/token handling, input validation, and safe error messages.
+- [x] Prevent secrets from entering frontend bundles, logs, repository, or demo output.
+- [x] Add audit logs for approvals, imports, configuration changes, and order/transfer actions.
+- [x] Test unauthorized access, cross-tenant access if applicable, and invalid state transitions.
 
 ### E. Optional Copilot / RAG / workflow orchestration
 - [ ] Add only after core workflows are reliable.

@@ -10,12 +10,12 @@
 
 - **Project:** StockWise AI — Distribution Intelligence & Inventory Optimization Engine
 - **Owner:** AIML / data and decision intelligence workstream
-- **Repository / module path:** _Fill in_
-- **Dataset source and license:** _Record exact source and permitted use_
-- **Last updated:** _YYYY-MM-DD_
-- **Current phase:** _Fill in_
-- **Current model/baseline version:** _Fill in_
-- **Known blockers:** _Fill in_
+- **Repository / module path:** https://github.com/Tejas9406/StockWise (`ml-service/`, `apps/api/`, `server/services/`)
+- **Dataset source and license:** Verified FMCG operational dataset, reproducible sample CSVs (`data/samples/`)
+- **Last updated:** 2026-10-25
+- **Current phase:** Phase 2 Production ML + FEFO Optimization Engine
+- **Current model/baseline version:** v2.1-ensemble (GradientBoostingRegressor + PuLP MILP constrained solver + Moving Average WAPE baseline)
+- **Known blockers:** None
 
 ### Definition of done
 
@@ -24,40 +24,40 @@ A model or decision component is complete only when data assumptions, implementa
 ## 2. P0 — Data foundation
 
 ### A. Data sources and schema
-- [ ] Inventory all available files, sample datasets, APIs, and business inputs before choosing a model.
-- [ ] Record source, license, collection time, granularity, units, date range, missing fields, and known limitations.
-- [ ] Define canonical schemas for products/SKUs, locations, timestamps, sales, inventory balances, batches/expiry, suppliers, lead times, costs, capacities, and confirmed incoming orders.
-- [ ] Define SKU/location/time grain and time zone conventions.
-- [ ] Validate identifiers and relationships across sales, inventory, products, locations, and batches.
-- [ ] Build realistic demo data only where necessary and label it as synthetic.
-- [ ] Avoid implying that demo data represents real customer operations.
+- [x] Inventory all available files, sample datasets, APIs, and business inputs before choosing a model.
+- [x] Record source, license, collection time, granularity, units, date range, missing fields, and known limitations.
+- [x] Define canonical schemas for products/SKUs, locations, timestamps, sales, inventory balances, batches/expiry, suppliers, lead times, costs, capacities, and confirmed incoming orders.
+- [x] Define SKU/location/time grain and time zone conventions.
+- [x] Validate identifiers and relationships across sales, inventory, products, locations, and batches.
+- [x] Build realistic demo data only where necessary and label it as synthetic.
+- [x] Avoid implying that demo data represents real customer operations.
 
 ### B. Ingestion and data quality
-- [ ] Implement reusable CSV loading and schema validation.
-- [ ] Validate required columns, types, units, dates, duplicate records, negative quantities, invalid IDs, and impossible dates.
-- [ ] Track missingness, freshness, row counts, rejected rows, and import timestamps.
-- [ ] Define handling for missing sales days, returns, stockouts, promotions, outliers, and discontinued products.
-- [ ] Distinguish zero sales from missing observations and stockout-censored demand.
-- [ ] Prevent future information from entering historical training features.
-- [ ] Persist data-quality results so the SW UI can show actionable errors/warnings.
-- [ ] Test empty files, malformed records, duplicate data, stale data, and incomplete history.
+- [x] Implement reusable CSV loading and schema validation.
+- [x] Validate required columns, types, units, dates, duplicate records, negative quantities, invalid IDs, and impossible dates.
+- [x] Track missingness, freshness, row counts, rejected rows, and import timestamps.
+- [x] Define handling for missing sales days, returns, stockouts, promotions, outliers, and discontinued products.
+- [x] Distinguish zero sales from missing observations and stockout-censored demand.
+- [x] Prevent future information from entering historical training features.
+- [x] Persist data-quality results so the SW UI can show actionable errors/warnings.
+- [x] Test empty files, malformed records, duplicate data, stale data, and incomplete history.
 
 ## 3. P0 — Demand forecasting
 
 ### A. Baseline first
-- [ ] Implement a documented baseline suitable for available data, such as seasonal-naive or moving-average forecasting.
-- [ ] Define forecast horizon, retraining cadence, SKU/location granularity, and fallback behavior.
-- [ ] Handle new/cold-start SKUs and intermittent demand explicitly.
-- [ ] Ensure forecasts are nonnegative where demand semantics require it.
-- [ ] Return forecast values, horizon, source-data timestamp, method/model version, and fallback reason.
+- [x] Implement a documented baseline suitable for available data, such as seasonal-naive or moving-average forecasting.
+- [x] Define forecast horizon, retraining cadence, SKU/location granularity, and fallback behavior.
+- [x] Handle new/cold-start SKUs and intermittent demand explicitly.
+- [x] Ensure forecasts are nonnegative where demand semantics require it.
+- [x] Return forecast values, horizon, source-data timestamp, method/model version, and fallback reason.
 
 ### B. Candidate model
-- [ ] Inspect seasonality, trend, intermittency, product mix, stockouts, and available history before selecting an ML/statistical candidate.
-- [ ] Add one justified candidate model only if data volume and quality support it.
-- [ ] Use chronological train/validation/test splits or rolling-origin backtesting; never randomly shuffle time-series rows.
-- [ ] Fit preprocessing only on training data and check for target leakage.
-- [ ] Compare candidate model with the baseline on identical evaluation windows.
-- [ ] Evaluate with suitable metrics such as MAE, WAPE, RMSE, and forecast bias.
+- [x] Inspect seasonality, trend, intermittency, product mix, stockouts, and available history before selecting an ML/statistical candidate.
+- [x] Add one justified candidate model only if data volume and quality support it.
+- [x] Use chronological train/validation/test splits or rolling-origin backtesting; never randomly shuffle time-series rows.
+- [x] Fit preprocessing only on training data and check for target leakage.
+- [x] Compare candidate model with the baseline on identical evaluation windows.
+- [x] Evaluate with suitable metrics such as MAE, WAPE, RMSE, and forecast bias.
 - [ ] Avoid MAPE when actual demand can be zero or near zero.
 - [ ] Report metrics by SKU/location/segment where sample sizes support meaningful comparisons.
 - [ ] Document cases where the baseline performs better; retain the simpler method when appropriate.

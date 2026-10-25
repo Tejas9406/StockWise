@@ -74,6 +74,7 @@ function App() {
                   <Route path="/manager/recommendations" element={<Recommendations />} />
                   <Route path="/manager/comparison" element={<BaselineComparison />} />
                   <Route path="/manager/simulation" element={<WhatIfSimulation />} />
+                  <Route path="/manager/disruption" element={<WhatIfSimulation />} />
                   <Route path="/manager/scenarios" element={<WhatIfSimulation />} />
                   <Route path="/manager/impact" element={<BusinessImpact />} />
                   <Route path="/manager/monitoring" element={<ModelMonitoring />} />

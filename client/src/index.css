@@ -4,9 +4,62 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen;
-    background-color: #F8FAFC;
+    @apply text-slate-800 font-sans antialiased min-h-screen;
+    background-color: #F4F6F8;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.03) 0px, transparent 50%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+}
+
+/* Quixotic Design System Utilities */
+.quixotic-card {
+  background-color: #FFFFFF;
+  border-radius: 1.75rem; /* 28px */
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.03), 0 4px 12px -2px rgba(15, 23, 42, 0.02);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quixotic-card:hover {
+  box-shadow: 0 20px 40px -8px rgba(16, 185, 129, 0.07), 0 6px 16px -4px rgba(15, 23, 42, 0.03);
+  transform: translateY(-1.5px);
+}
+
+.quixotic-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.quixotic-green-card {
+  background: linear-gradient(135deg, #064E3B 0%, #047857 60%, #059669 100%);
+  border-radius: 1.75rem;
+  color: #FFFFFF;
+  box-shadow: 0 16px 36px -8px rgba(5, 150, 105, 0.3);
+}
+
+.pill-striped-bar {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(16, 185, 129, 0.35),
+    rgba(16, 185, 129, 0.35) 4px,
+    rgba(16, 185, 129, 0.55) 4px,
+    rgba(16, 185, 129, 0.55) 8px
+  );
+  border-radius: 9999px;
+}
+
+.pill-active-bar {
+  background: linear-gradient(180deg, #10B981 0%, #047857 100%);
+  border-radius: 9999px;
+  box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.4);
 }
 
 /* Custom modern scrollbar */
@@ -16,7 +69,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {

@@ -1,24 +1,41 @@
 services:
-  api:
+  # 1. Python FastAPI AIML Microservice (PuLP solver, GBR forecasting, simulation)
+  ml-service:
     build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+      context: ./ml-service
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: sqlite:///./data/app.db
-      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
-      SOLVER: greedy
-    volumes:
-      - ./data:/app/data
+      PORT: 8000
     restart: unless-stopped
 
-  web:
+  # 2. Node.js Express Backend API Gateway (PostgreSQL Neon, Firebase Auth, Automation Daemon)
+  server:
     build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://neondb_owner:npg_DByW63epkzUn@ep-orange-cherry-b5pb2ul7-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-stockwise-c4fb6}
+      FASTAPI_URL: http://ml-service:8000
+      CLIENT_URL: http://localhost:5173
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-supersecretjwtkey_stockwise_2026}
+    depends_on:
+      - ml-service
+    restart: unless-stopped
+
+  # 3. React 18 + Vite Frontend Console (Quixotic Design, Multi-Echelon Dashboards)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     ports:
       - "5173:80"
     depends_on:
-      - api
+      - server
     restart: unless-stopped

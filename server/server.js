@@ -21,6 +21,8 @@ import storePanelRoutes from './routes/storePanelRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import importRoutes from './routes/importRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import automationRoutes from './routes/automationRoutes.js';
+import { startAutomationDaemon } from './services/automationService.js';
 
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
@@ -91,6 +93,7 @@ app.use('/api/store', storePanelRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/automation', automationRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
@@ -105,7 +108,9 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Database: PostgreSQL (Neon Cloud Operational DB)`);
     console.log(`Authentication: Firebase Auth + Admin SDK Token Verification`);
     console.log(`AIML Microservice: Connected via FastAPI Gateway`);
+    console.log(`Automation: Multi-Channel Expiry Daemon (Email & WhatsApp) Active`);
     console.log(`=======================================================`);
+    startAutomationDaemon();
   });
 }
 

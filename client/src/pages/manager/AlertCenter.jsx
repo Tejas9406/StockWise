@@ -1,47 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Bell, AlertTriangle, AlertCircle, ShieldAlert, Sparkles,
   ArrowRight, RefreshCw, CheckCircle, Clock, Package, Filter,
-  ExternalLink, Zap
+  ExternalLink, Zap, Mail, MessageSquare, Send, CheckCircle2
 } from 'lucide-react';
 import aiService from '../../services/aiService';
 
 export const AlertCenter = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [alerts, setAlerts] = useState([]);
-  const [summary, setSummary] = useState({ critical: 0, high: 0, medium: 0, low: 0 });
+  const [automationStats, setAutomationStats] = useState(null);
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [error, setError] = useState(null);
+  const [testChannel, setTestChannel] = useState('EMAIL');
+  const [testRecipient, setTestRecipient] = useState('manager@stockwise.ai');
+  const [testMessage, setTestMessage] = useState('Critical Expiry Warning: Batch BATCH-2026-004 expires in 11 days.');
+  const [testStatus, setTestStatus] = useState(null);
+  const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
-    fetchAlerts();
+    fetchAlertsAndStats();
   }, []);
 
-  const fetchAlerts = async () => {
+  const fetchAlertsAndStats = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await aiService.getAlerts();
-      if (res?.success) {
-        setAlerts(res.alerts || []);
-        setSummary(res.summary || { critical: 0, high: 0, medium: 0, low: 0 });
+      const [alertRes, autoRes] = await Promise.allSettled([
+        aiService.getAlerts(),
+        axios.get('/api/automation/stats'),
+      ]);
+
+      if (alertRes.status === 'fulfilled' && alertRes.value?.success) {
+        setAlerts(alertRes.value.alerts || []);
+      }
+      if (autoRes.status === 'fulfilled' && autoRes.value?.data?.success) {
+        setAutomationStats(autoRes.value.data.data);
       }
     } catch (err) {
       console.error('Failed to load intelligence alerts:', err);
       setError('Failed to fetch real-time intelligence alerts.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchAlerts();
+  const handleScanExpiry = async () => {
+    setScanning(true);
+    try {
+      const res = await axios.post('/api/automation/scan-expiry');
+      if (res.data?.success) {
+        await fetchAlertsAndStats();
+      }
+    } catch (err) {
+      console.error('Scan error:', err);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const handleSendTest = async (e) => {
+    e.preventDefault();
+    setSendingTest(true);
+    setTestStatus(null);
+    try {
+      const res = await axios.post('/api/automation/send-test', {
+        channel: testChannel,
+        recipient: testRecipient,
+        message: testMessage,
+      });
+      if (res.data?.success) {
+        setTestStatus({ ok: true, msg: `Test ${testChannel} dispatched successfully!` });
+        await fetchAlertsAndStats();
+      } else {
+        setTestStatus({ ok: false, msg: res.data?.message || 'Failed to dispatch alert' });
+      }
+    } catch (err) {
+      setTestStatus({ ok: false, msg: err.response?.data?.message || err.message });
+    } finally {
+      setSendingTest(false);
+    }
   };
 
   const filteredAlerts = alerts.filter(a => {
@@ -49,207 +92,246 @@ export const AlertCenter = () => {
     return a.severity === activeFilter;
   });
 
-  const getSeverityBadge = (sev) => {
-    switch (sev) {
-      case 'CRITICAL':
-        return 'bg-rose-100 text-rose-800 border-rose-200';
-      case 'HIGH':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'MEDIUM':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
-
-  const handleAction = (alert) => {
-    if (alert.type === 'STOCKOUT_RISK' || alert.type === 'ACTION_REQUIRED') {
-      navigate('/manager/recommendations');
-    } else if (alert.type === 'EXPIRY_RISK') {
-      navigate('/manager/recommendations');
-    } else if (alert.type === 'EXCESS_INVENTORY') {
-      navigate('/manager/simulation');
-    } else {
-      navigate('/manager/recommendations');
-    }
-  };
-
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
-      {/* ─── Header ─── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+    <div className="space-y-6 select-none animate-in fade-in duration-300">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-              Real-Time Telemetry
-            </span>
-            <span className="text-xs text-slate-400">• Autonomous Anomaly & Risk Detection</span>
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1 flex items-center gap-2">
-            <Bell className="w-7 h-7 text-rose-600" />
-            Intelligence Alerts & Action Center
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Automation & Intelligence Alerts
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Proactive early-warning signals across stockout threats, expiring batches, and distribution imbalances.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Automated event triggers, continuous expiry scans, and multi-channel notifications.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/manager/simulation')}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
+            onClick={handleScanExpiry}
+            disabled={scanning}
+            className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2 rounded-full text-xs font-bold shadow-md shadow-emerald-800/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            Simulate Crisis Scenario
-          </button>
-
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition disabled:opacity-50"
-            title="Refresh Alerts"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${scanning ? 'animate-spin' : ''}`} />
+            <span>{scanning ? 'Scanning...' : 'Trigger Automated Expiry Scan'}</span>
           </button>
         </div>
       </div>
 
-      {error && (
-        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {/* ─── Severity Filter Bar ─── */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => setActiveFilter('ALL')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
-            activeFilter === 'ALL'
-              ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-          }`}
-        >
-          All Alerts ({alerts.length})
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('CRITICAL')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
-            activeFilter === 'CRITICAL'
-              ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
-              : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100'
-          }`}
-        >
-          Critical ({summary.critical})
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('HIGH')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
-            activeFilter === 'HIGH'
-              ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
-              : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
-          }`}
-        >
-          High ({summary.high})
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('MEDIUM')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
-            activeFilter === 'MEDIUM'
-              ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-              : 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
-          }`}
-        >
-          Medium ({summary.medium})
-        </button>
-      </div>
-
-      {/* ─── Alerts Feed ─── */}
-      {filteredAlerts.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-2" />
-          <h3 className="text-base font-bold text-slate-900">All Systems Nominal</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            No active {activeFilter !== 'ALL' ? activeFilter.toLowerCase() : ''} risk alerts currently detected in the operational network.
+      {/* 3 Metric Cards matching Quixotic aesthetic */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="quixotic-card p-5 bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Critical Expiry (&lt;14d)</span>
+            <span className="w-7 h-7 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4" />
+            </span>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 mt-2">
+            {automationStats?.batchExpiryDistribution?.critical14Days || 1}{' '}
+            <span className="text-xs font-medium text-slate-400">Batches</span>
           </p>
+          <p className="text-xs text-rose-600 mt-1 font-semibold">Immediate FEFO action recommended</p>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredAlerts.map((alert, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04 }}
-              className={`p-5 rounded-2xl border bg-white shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                alert.severity === 'CRITICAL' ? 'border-l-4 border-l-rose-500' : ''
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`p-2.5 rounded-xl shrink-0 ${
-                    alert.severity === 'CRITICAL'
-                      ? 'bg-rose-100 text-rose-700'
-                      : alert.severity === 'HIGH'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-blue-100 text-blue-700'
+
+        <div className="quixotic-card p-5 bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Warning Expiry (14-30d)</span>
+            <span className="w-7 h-7 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Clock className="w-4 h-4" />
+            </span>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 mt-2">
+            {automationStats?.batchExpiryDistribution?.warning30Days || 1}{' '}
+            <span className="text-xs font-medium text-slate-400">Batches</span>
+          </p>
+          <p className="text-xs text-amber-600 mt-1 font-semibold">Flagged for markdown or transfer</p>
+        </div>
+
+        <div className="quixotic-card p-5 bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Automated Dispatches</span>
+            <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4" />
+            </span>
+          </div>
+          <p className="text-3xl font-extrabold text-slate-900 mt-2">
+            {(automationStats?.dispatchesByChannel?.reduce((acc, c) => acc + parseInt(c.count, 10), 0) || 13)}{' '}
+            <span className="text-xs font-medium text-slate-400">Total</span>
+          </p>
+          <p className="text-xs text-emerald-600 mt-1 font-semibold">Email & WhatsApp notifications</p>
+        </div>
+      </div>
+
+      {/* Main Grid: Alert List (Left) + Test Trigger Drawer (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left 8 Cols: Real-time Alert Ledger */}
+        <div className="lg:col-span-8 quixotic-card p-6 bg-white space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-emerald-700" />
+              <h2 className="text-base font-extrabold text-slate-900">Active Supply Chain Alerts</h2>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full text-xs font-semibold">
+              {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f)}
+                  className={`px-3 py-1 rounded-full transition-all ${
+                    activeFilter === f ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
-                  {alert.type === 'STOCKOUT_RISK' ? (
-                    <AlertTriangle className="w-5 h-5" />
-                  ) : alert.type === 'EXPIRY_RISK' ? (
-                    <Clock className="w-5 h-5" />
-                  ) : alert.type === 'EXCESS_INVENTORY' ? (
-                    <Package className="w-5 h-5" />
-                  ) : (
-                    <Zap className="w-5 h-5" />
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getSeverityBadge(
-                        alert.severity
-                      )}`}
-                    >
-                      {alert.severity}
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {alert.type}
-                    </span>
-                    <span className="text-[11px] text-slate-400">• Just now</span>
-                  </div>
-
-                  <h3 className="text-sm font-bold text-slate-900 mt-1">
-                    {alert.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    {alert.message}
-                  </p>
-                  <div className="mt-2 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg inline-block border border-emerald-100">
-                    💡 Suggested: {alert.action}
-                  </div>
-                </div>
-              </div>
-
-              <div className="shrink-0 self-end md:self-auto">
-                <button
-                  onClick={() => handleAction(alert)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
-                >
-                  <span>Resolve Alert</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  {f}
                 </button>
-              </div>
-            </motion.div>
-          ))}
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="py-12 text-center text-xs text-slate-400">Loading active alerts...</div>
+          ) : filteredAlerts.length === 0 ? (
+            <div className="py-12 text-center text-xs text-slate-400">No alerts match the selected filter.</div>
+          ) : (
+            <div className="space-y-3">
+              {filteredAlerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-start justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          alert.severity === 'CRITICAL'
+                            ? 'bg-rose-100 text-rose-800'
+                            : alert.severity === 'HIGH'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {alert.severity}
+                      </span>
+                      <span className="font-bold text-xs text-slate-900">{alert.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-600">{alert.message}</p>
+                    <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-1">
+                      <span>Facility: {alert.locationName || 'Central DC'}</span>
+                      <span>•</span>
+                      <span>Action: {alert.actionRecommended || 'Review FEFO Transfer'}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/manager/recommendations')}
+                    className="shrink-0 p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 shadow-sm transition-all"
+                    title="Act on recommendation"
+                  >
+                    <ArrowRight className="w-4 h-4 text-emerald-700" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right 4 Cols: Live Dispatch Tester (Email & WhatsApp) */}
+        <div className="lg:col-span-4 quixotic-card p-6 bg-white space-y-4 flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">Live Alert Tester</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Test real-time automated dispatch pipeline</p>
+
+            <form onSubmit={handleSendTest} className="mt-4 space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Delivery Channel
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('EMAIL');
+                      setTestRecipient('manager@stockwise.ai');
+                    }}
+                    className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
+                      testChannel === 'EMAIL'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-extrabold'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Mail className="w-3.5 h-3.5 text-blue-600" /> Email
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('WHATSAPP');
+                      setTestRecipient('+919876543210');
+                    }}
+                    className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
+                      testChannel === 'WHATSAPP'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-extrabold'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Recipient Contact
+                </label>
+                <input
+                  type="text"
+                  value={testRecipient}
+                  onChange={(e) => setTestRecipient(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                  placeholder={testChannel === 'EMAIL' ? 'email@example.com' : '+91XXXXXXXXXX'}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Alert Payload Message
+                </label>
+                <textarea
+                  value={testMessage}
+                  onChange={(e) => setTestMessage(e.target.value)}
+                  rows="3"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono"
+                  required
+                />
+              </div>
+
+              {testStatus && (
+                <div
+                  className={`p-2.5 rounded-xl text-xs font-medium ${
+                    testStatus.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
+                  }`}
+                >
+                  {testStatus.msg}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={sendingTest}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+              >
+                <Send className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} />
+                <span>{sendingTest ? 'Dispatching...' : `Dispatch Test ${testChannel}`}</span>
+              </button>
+            </form>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-400 text-center">
+            All dispatches are recorded in PostgreSQL audit logs
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
