@@ -7,13 +7,15 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { Link } from 'react-router-dom';
-import { Boxes, RefreshCw, ShoppingCart, Truck } from 'lucide-react';
+import { Boxes, RefreshCw, ShoppingCart, Truck, UploadCloud } from 'lucide-react';
+import { QuickUploadModal } from '../../components/common/QuickUploadModal';
 
 export const StoreInventory = () => {
   const [inventories, setInventories] = useState([]);
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -52,6 +54,9 @@ export const StoreInventory = () => {
           <Button size="sm" variant="outline" icon={RefreshCw} onClick={fetchInventory}>
             Refresh
           </Button>
+          <Button size="sm" variant="secondary" icon={UploadCloud} onClick={() => setShowUploadModal(true)}>
+            Upload Store CSV
+          </Button>
           <Link to="/store/receive">
             <Button size="sm" variant="primary" icon={Truck}>
               Receive Stock
@@ -59,6 +64,13 @@ export const StoreInventory = () => {
           </Link>
         </div>
       </div>
+
+      <QuickUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        role="STORE_MANAGER"
+        onUploadSuccess={() => fetchInventory()}
+      />
 
       <Card noPadding title="Current On-Shelf Stock">
         {inventories.length === 0 ? (

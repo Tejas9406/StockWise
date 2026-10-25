@@ -72,14 +72,8 @@ function App() {
                   <Route path="/manager/forecast" element={<DemandForecast />} />
                   <Route path="/manager/risks" element={<RiskAlerts />} />
                   <Route path="/manager/recommendations" element={<Recommendations />} />
-                  <Route path="/manager/comparison" element={<BaselineComparison />} />
-                  <Route path="/manager/simulation" element={<WhatIfSimulation />} />
-                  <Route path="/manager/disruption" element={<WhatIfSimulation />} />
-                  <Route path="/manager/scenarios" element={<WhatIfSimulation />} />
-                  <Route path="/manager/impact" element={<BusinessImpact />} />
-                  <Route path="/manager/monitoring" element={<ModelMonitoring />} />
-                  <Route path="/manager/alerts" element={<AlertCenter />} />
                   <Route path="/manager/transfers" element={<Transfers />} />
+                  <Route path="/manager/alerts" element={<AlertCenter />} />
                   <Route path="/manager/history" element={<DecisionHistory />} />
                   <Route path="/manager/data-health" element={<DataHealth />} />
                   <Route path="/manager/profile" element={<ManagerProfile />} />

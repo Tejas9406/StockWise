@@ -17,12 +17,14 @@ import {
   Store as StoreIcon,
   Plus,
 } from 'lucide-react';
-import { FeatureExplainer } from '../../components/common/FeatureExplainer';
+import { QuickUploadModal } from '../../components/common/QuickUploadModal';
+import { UploadCloud } from 'lucide-react';
 
 export const StoreDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -49,6 +51,15 @@ export const StoreDashboard = () => {
 
   return (
     <div className="space-y-6">
+      <QuickUploadModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        moduleTitle="Retail Store Stock & POS Sales CSV Upload"
+        defaultDatasetType="SALES"
+        locationContext={data.store?.name || 'Local Store'}
+        onUploadSuccess={fetchDashboard}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -64,6 +75,14 @@ export const StoreDashboard = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            icon={UploadCloud}
+            onClick={() => setIsUploadOpen(true)}
+          >
+            Upload Store CSV
+          </Button>
           <Link to="/store/receive">
             <Button size="sm" variant="primary" icon={PackageCheck}>
               Receive Stock ({data.incomingTransfersCount || 0})

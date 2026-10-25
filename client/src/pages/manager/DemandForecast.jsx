@@ -74,10 +74,14 @@ export const DemandForecast = () => {
 
     try {
       const res = await aiService.getForecast({
+        productId: selectedProductId || undefined,
+        storeId: selectedStoreId || undefined,
+        horizonDays: Number(horizonDays),
+        safetyDays: Number(safetyFactor),
         product_id: selectedProductId || undefined,
         store_id: selectedStoreId || undefined,
-        horizon: horizonDays,
-        safety_factor: safetyFactor,
+        horizon: Number(horizonDays),
+        safety_factor: Number(safetyFactor),
       });
 
       if (res.success) {

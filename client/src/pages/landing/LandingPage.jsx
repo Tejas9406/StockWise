@@ -214,30 +214,28 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Phase 1 vs Phase 2 Clear Architecture Callout */}
+      {/* Clean Call-to-Action Banner */}
       <section className="py-16 px-6 lg:px-12 max-w-7xl mx-auto">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-8 sm:p-12 shadow-2xl">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-emerald-500/20 relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-4 border border-emerald-500/30">
-                <Database className="w-3.5 h-3.5" />
-                <span>Phase 1 Solid MERN Foundation Complete</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Commercial Ready</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Built to power the Phase 2 AI forecasting and allocation engine
+              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Ready to optimize your FMCG supply chain network?
               </h3>
               <p className="text-slate-300 text-xs sm:text-sm mt-3 leading-relaxed">
-                All controllers, schemas, audit trails, and transactional state machines are live in MongoDB.
-                Phase 2 interfaces (<code className="text-emerald-400">ForecastService</code>,{' '}
-                <code className="text-emerald-400">AllocationService</code>,{' '}
-                <code className="text-emerald-400">RiskService</code>) are structured for drop-in integration.
+                Connect your warehouses and retail stores, predict daily demand, and automate perishable batch clearance with intelligent FEFO allocation.
               </p>
             </div>
 
             <div className="shrink-0 flex gap-3">
               <Link to="/login">
                 <Button size="lg" variant="primary">
-                  Launch Demo Application
+                  Launch Operations Console
                 </Button>
               </Link>
             </div>

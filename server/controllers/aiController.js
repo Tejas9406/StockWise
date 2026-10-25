@@ -37,11 +37,11 @@ async function callFastAPI(endpoint, payload, timeoutMs = 4000) {
  */
 export const getForecast = async (req, res, next) => {
   try {
-    const productId = req.query.productId ? parseInt(req.query.productId, 10) : 1;
-    const storeId = req.query.storeId ? parseInt(req.query.storeId, 10) : 1;
-    const horizonDays = req.query.horizonDays ? parseInt(req.query.horizonDays, 10) : 7;
-    const windowDays = req.query.windowDays ? parseInt(req.query.windowDays, 10) : 7;
-    const safetyDays = req.query.safetyDays ? parseInt(req.query.safetyDays, 10) : 2;
+    const productId = parseInt(req.query.productId || req.query.product_id || '1', 10);
+    const storeId = parseInt(req.query.storeId || req.query.store_id || '1', 10);
+    const horizonDays = parseInt(req.query.horizonDays || req.query.horizon || '7', 10);
+    const windowDays = parseInt(req.query.windowDays || req.query.window || '7', 10);
+    const safetyDays = parseFloat(req.query.safetyDays || req.query.safety_factor || '2');
 
     // 1. Fetch Product and Store details from PostgreSQL
     const prodRes = await query('SELECT id, name, sku, category, shelf_life_days FROM products WHERE id = $1', [productId]);

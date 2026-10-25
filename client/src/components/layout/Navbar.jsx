@@ -59,11 +59,11 @@ export const Navbar = () => {
   // Floating pill tabs for manager
   const pillTabs = [
     { to: '/manager', label: 'Dashboard', end: true },
-    { to: '/manager/forecast', label: 'Forecast' },
-    { to: '/manager/disruption', label: 'Disruption Lab' },
-    { to: '/manager/recommendations', label: 'Planner' },
-    { to: '/manager/alerts', label: 'Alerts & Automation' },
-    { to: '/manager/history', label: 'Audit' },
+    { to: '/manager/forecast', label: 'Demand Forecast' },
+    { to: '/manager/recommendations', label: 'Replenishment Planner' },
+    { to: '/manager/transfers', label: 'Transfers' },
+    { to: '/manager/data-health', label: 'Data Hub' },
+    { to: '/manager/alerts', label: 'Alerts & Expiry' },
   ];
 
   return (

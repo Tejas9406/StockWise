@@ -6,13 +6,15 @@ import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { Boxes, RefreshCw, Clock } from 'lucide-react';
+import { Boxes, RefreshCw, Clock, UploadCloud } from 'lucide-react';
+import { QuickUploadModal } from '../../components/common/QuickUploadModal';
 
 export const WarehouseInventory = () => {
   const [inventories, setInventories] = useState([]);
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -47,10 +49,22 @@ export const WarehouseInventory = () => {
           </p>
         </div>
 
-        <Button size="sm" variant="outline" icon={RefreshCw} onClick={fetchInventory}>
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" icon={RefreshCw} onClick={fetchInventory}>
+            Refresh
+          </Button>
+          <Button size="sm" variant="primary" icon={UploadCloud} onClick={() => setShowUploadModal(true)}>
+            Upload Inbound CSV
+          </Button>
+        </div>
       </div>
+
+      <QuickUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        role="WAREHOUSE"
+        onUploadSuccess={() => fetchInventory()}
+      />
 
       {/* On-hand Products Grid */}
       <Card noPadding title="Stock by Product SKU">

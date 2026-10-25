@@ -19,10 +19,14 @@ import {
 } from 'lucide-react';
 import { FeatureExplainer } from '../../components/common/FeatureExplainer';
 
+import { QuickUploadModal } from '../../components/common/QuickUploadModal';
+import { UploadCloud } from 'lucide-react';
+
 export const WarehouseDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -49,6 +53,15 @@ export const WarehouseDashboard = () => {
 
   return (
     <div className="space-y-6">
+      <QuickUploadModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        moduleTitle="Warehouse Inbound Batch & Stock Ingestion"
+        defaultDatasetType="BATCHES"
+        locationContext={data.warehouse?.name || 'Central Warehouse'}
+        onUploadSuccess={fetchDashboard}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -64,6 +77,14 @@ export const WarehouseDashboard = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            icon={UploadCloud}
+            onClick={() => setIsUploadOpen(true)}
+          >
+            Upload Inbound CSV
+          </Button>
           <Link to="/warehouse/pick-list">
             <Button size="sm" variant="primary" icon={ClipboardList}>
               Pick List ({data.pendingPicksCount || 0})

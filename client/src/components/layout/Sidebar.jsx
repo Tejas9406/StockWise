@@ -33,14 +33,13 @@ export const Sidebar = () => {
       case 'DISTRIBUTION_MANAGER':
         return [
           { to: '/manager', label: 'Dashboard', icon: LayoutDashboard, end: true },
-          { to: '/manager/forecast', label: 'Forecast', icon: TrendingUp },
-          { to: '/manager/disruption', label: 'Disruption Lab', icon: Zap },
+          { to: '/manager/forecast', label: 'Demand Forecast', icon: TrendingUp },
           { to: '/manager/recommendations', label: 'Planner', icon: Sparkles },
-          { to: '/manager/alerts', label: 'Alerts & Automation', icon: Bell },
-          { to: '/manager/inventory', label: 'Inventory', icon: Boxes },
           { to: '/manager/transfers', label: 'Transfers', icon: ArrowRightLeft },
+          { to: '/manager/inventory', label: 'Inventory', icon: Boxes },
+          { to: '/manager/alerts', label: 'Alerts & Automation', icon: Bell },
+          { to: '/manager/data-health', label: 'Data Hub', icon: Database },
           { to: '/manager/history', label: 'Audit Trail', icon: History },
-          { to: '/manager/data-health', label: 'Datasets', icon: Database },
         ];
       case 'WAREHOUSE':
         return [
