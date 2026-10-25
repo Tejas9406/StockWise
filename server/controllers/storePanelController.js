@@ -36,6 +36,14 @@ export const getStoreDashboard = async (req, res, next) => {
       [storeId]
     );
 
+    const expiryRes = await query(
+      `SELECT COUNT(*) as count 
+       FROM batches 
+       WHERE store_id = $1 AND quantity > 0 AND expiry_date <= (NOW() + INTERVAL '30 days')`,
+      [storeId]
+    );
+    const expiryRiskCount = parseInt(expiryRes.rows[0]?.count || 0, 10);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -44,8 +52,8 @@ export const getStoreDashboard = async (req, res, next) => {
         totalUnits: parseInt(invRes.rows[0].total_units, 10),
         lowStockCount: parseInt(lowStockRes.rows[0].count, 10),
         incomingTransfersCount: parseInt(incomingRes.rows[0].count, 10),
-        stockoutRiskCount: 1,
-        expiryRiskCount: 0,
+        stockoutRiskCount: parseInt(lowStockRes.rows[0].count, 10),
+        expiryRiskCount,
       },
     });
   } catch (error) {

@@ -143,15 +143,15 @@ export const Recommendations = () => {
     return true;
   });
 
-  // KPI Calculations
-  const totalCount = recommendations.length;
-  const criticalCount = recommendations.filter((r) => r.priority === 'CRITICAL').length;
-  const totalUnits = recommendations.reduce((acc, r) => acc + (parseInt(r.recommended_quantity || r.quantity, 10) || 0), 0);
-  const pendingCount = recommendations.filter((r) => r.status === 'PENDING').length;
+  // KPI Calculations (Dynamically reactive to status filter)
+  const totalCount = filteredRecs.length;
+  const criticalCount = filteredRecs.filter((r) => r.priority === 'CRITICAL').length;
+  const totalUnits = filteredRecs.reduce((acc, r) => acc + (parseInt(r.recommended_quantity || r.quantity, 10) || 0), 0);
+  const pendingCount = filteredRecs.filter((r) => r.status === 'PENDING').length;
 
-  // Plotly Chart: Allocation Flow by Store Destination
+  // Plotly Chart: Allocation Flow by Store Destination (Reactive to current filter)
   const storeMap = {};
-  recommendations.forEach((r) => {
+  filteredRecs.forEach((r) => {
     const sName = r.store_name || 'Retail Store';
     storeMap[sName] = (storeMap[sName] || 0) + (parseInt(r.recommended_quantity || r.quantity, 10) || 0);
   });

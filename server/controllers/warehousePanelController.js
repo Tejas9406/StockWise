@@ -42,6 +42,14 @@ export const getWarehouseDashboard = async (req, res, next) => {
       [warehouseId]
     );
 
+    const lowStockRes = await query(
+      `SELECT COUNT(*) as count 
+       FROM inventory i
+       JOIN products p ON i.product_id = p.id
+       WHERE i.warehouse_id = $1 AND i.location_type = 'WAREHOUSE' AND i.quantity <= p.reorder_point`,
+      [warehouseId]
+    );
+
     return res.status(200).json({
       success: true,
       data: {
@@ -52,7 +60,7 @@ export const getWarehouseDashboard = async (req, res, next) => {
         pendingPicksCount: parseInt(picksRes.rows[0].count, 10),
         readyToDispatchCount: parseInt(dispatchQueueRes.rows[0].count, 10),
         todayDispatchesCount: parseInt(todayDispatchesRes.rows[0].count, 10),
-        lowStockItemsCount: 1,
+        lowStockItemsCount: parseInt(lowStockRes.rows[0].count, 10),
       },
     });
   } catch (error) {
