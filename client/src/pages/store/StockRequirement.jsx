@@ -50,9 +50,12 @@ export const StockRequirement = () => {
       ]);
 
       if (reqRes.success) setRequirements(reqRes.data);
-      if (whRes.success) {
+      if (whRes.success && Array.isArray(whRes.data)) {
         setWarehouses(whRes.data);
-        if (whRes.data.length > 0) setRequestWarehouseId(whRes.data[0]._id);
+        if (whRes.data.length > 0) {
+          const firstWh = whRes.data[0]?.id || whRes.data[0]?._id || 1;
+          setRequestWarehouseId(firstWh);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load stock requirements');
@@ -69,6 +72,8 @@ export const StockRequirement = () => {
     setSelectedReq(reqItem);
     setRequestQuantity(reqItem.requiredQuantity > 0 ? reqItem.requiredQuantity : 40);
     setRequestNotes(`Store requested replenishment for ${reqItem.productName}`);
+    const defaultWh = requestWarehouseId || warehouses[0]?.id || warehouses[0]?._id || 1;
+    setRequestWarehouseId(defaultWh);
     setIsRequestModalOpen(true);
   };
 
@@ -78,12 +83,17 @@ export const StockRequirement = () => {
 
     setSubmittingRequest(true);
     try {
+      const whId = parseInt(requestWarehouseId || warehouses[0]?.id || warehouses[0]?._id || 1, 10);
+      const prodId = parseInt(selectedReq.productId || selectedReq.id || 1, 10);
+      const destId = parseInt(user?.storeId || user?.store_id || 1, 10);
+      const qty = Number(requestQuantity) > 0 ? Number(requestQuantity) : 40;
+
       const res = await transferService.createTransfer({
-        productId: selectedReq.productId,
-        sourceWarehouseId: requestWarehouseId,
+        productId: prodId,
+        sourceWarehouseId: whId,
         destinationType: 'STORE',
-        destinationId: user?.storeId || 1,
-        quantity: Number(requestQuantity),
+        destinationId: destId,
+        quantity: qty,
         notes: requestNotes,
       });
 
@@ -91,7 +101,7 @@ export const StockRequirement = () => {
         setIsRequestModalOpen(false);
         setToast({
           show: true,
-          message: `Replenishment order ${res.data?.transferNumber || ''} created successfully!`,
+          message: `Replenishment order ${res.data?.transfer_number || res.data?.transferNumber || ''} created successfully!`,
           type: 'success',
         });
         await fetchData();
@@ -239,9 +249,10 @@ export const StockRequirement = () => {
             required
             value={requestWarehouseId}
             onChange={(e) => setRequestWarehouseId(e.target.value)}
+            placeholder=""
             options={warehouses.map((wh) => ({
-              value: wh._id,
-              label: `${wh.code} — ${wh.name} (${wh.location})`,
+              value: wh.id || wh._id,
+              label: `${wh.code || ''} — ${wh.name} (${wh.location || ''})`,
             }))}
           />
 

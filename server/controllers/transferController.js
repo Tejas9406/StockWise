@@ -160,11 +160,34 @@ export const getTransferById = async (req, res, next) => {
 
 export const createTransfer = async (req, res, next) => {
   try {
-    const destinationId = req.body.destinationId || req.user?.storeId || 1;
+    const rawDest = req.body.destinationId || req.user?.storeId || 1;
+    const destParsed = parseInt(rawDest, 10);
+    const destinationId = !isNaN(destParsed) && destParsed > 0 ? destParsed : 1;
+
+    const rawWh = req.body.sourceWarehouseId || req.user?.warehouseId || 1;
+    const whParsed = parseInt(rawWh, 10);
+    const sourceWarehouseId = !isNaN(whParsed) && whParsed > 0 ? whParsed : 1;
+
+    const rawProd = req.body.productId || 1;
+    const prodParsed = parseInt(rawProd, 10);
+    const productId = !isNaN(prodParsed) && prodParsed > 0 ? prodParsed : 1;
+
+    const rawQty = req.body.quantity;
+    const qtyParsed = parseInt(rawQty, 10);
+    const quantity = !isNaN(qtyParsed) && qtyParsed > 0 ? qtyParsed : 40;
+
+    const batchId = req.body.batchId && !isNaN(parseInt(req.body.batchId, 10))
+      ? parseInt(req.body.batchId, 10)
+      : null;
+
     const transfer = await pgTransferService.createTransfer({
       ...req.body,
-      destinationId: parseInt(destinationId, 10),
-      createdBy: req.user.id,
+      productId,
+      sourceWarehouseId,
+      destinationId,
+      quantity,
+      batchId,
+      createdBy: req.user?.id || 1,
     });
     return res.status(201).json({
       success: true,

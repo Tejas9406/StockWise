@@ -26,21 +26,29 @@ export const createTransfer = async ({
   createdBy,
 }) => {
   return await runTransaction(async (client) => {
+    const safeProductId = parseInt(productId, 10) || 1;
+    const safeSourceWh = parseInt(sourceWarehouseId, 10) || 1;
+    const safeDestId = parseInt(destinationId, 10) || 1;
+    const safeQty = parseInt(quantity, 10) || 40;
+    const safeCreatedBy = createdBy ? (parseInt(createdBy, 10) || 1) : 1;
+    const safeBatchId = batchId && !isNaN(parseInt(batchId, 10)) ? parseInt(batchId, 10) : null;
+    const safeNotes = typeof notes === 'string' ? notes.trim() : '';
+
     // 1. Check source warehouse stock
     const invRes = await client.query(
       `SELECT id, quantity, reserved_quantity 
        FROM inventory 
        WHERE product_id = $1 AND warehouse_id = $2 AND location_type = 'WAREHOUSE'
        FOR UPDATE`,
-      [productId, sourceWarehouseId]
+      [safeProductId, safeSourceWh]
     );
 
     const inv = invRes.rows[0];
     const available = inv ? (inv.quantity - inv.reserved_quantity) : 0;
 
-    if (!inv || available < quantity) {
+    if (!inv || available < safeQty) {
       throw new Error(
-        `Insufficient available stock in warehouse. Required: ${quantity}, Available: ${available}`
+        `Insufficient available stock in warehouse. Required: ${safeQty}, Available: ${available}`
       );
     }
 
@@ -52,7 +60,7 @@ export const createTransfer = async ({
         (transfer_number, product_id, source_warehouse_id, destination_type, destination_id, quantity, batch_id, status, notes, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING', $8, $9)
        RETURNING *`,
-      [transferNumber, productId, sourceWarehouseId, destinationType, destinationId, quantity, batchId, notes, createdBy]
+      [transferNumber, safeProductId, safeSourceWh, destinationType, safeDestId, safeQty, safeBatchId, safeNotes, safeCreatedBy]
     );
     const transfer = transferRes.rows[0];
 
@@ -60,7 +68,7 @@ export const createTransfer = async ({
     await client.query(
       `INSERT INTO approval_events (transfer_id, user_id, action, previous_value, new_value, reason)
        VALUES ($1, $2, 'CREATED', NULL, $3, $4)`,
-      [transfer.id, createdBy, JSON.stringify({ status: 'PENDING', quantity }), notes || 'Transfer request initiated']
+      [transfer.id, safeCreatedBy, JSON.stringify({ status: 'PENDING', quantity: safeQty }), safeNotes || 'Transfer request initiated']
     );
 
     // 4. Notify Managers & Warehouse Hub
@@ -68,7 +76,7 @@ export const createTransfer = async ({
       `INSERT INTO notifications (role, title, message, type, link)
        VALUES ('DISTRIBUTION_MANAGER', 'New Transfer Request Created', $1, 'INFO', '/manager/transfers'),
               ('WAREHOUSE_STAFF', 'New Transfer Request Pending', $1, 'INFO', '/warehouse/picklist')`,
-      [`Transfer ${transferNumber} for ${quantity} units awaits approval.`]
+      [`Transfer ${transferNumber} for ${safeQty} units awaits approval.`]
     );
 
     // Broadcast automatic notification to Telegram bot
@@ -76,7 +84,7 @@ export const createTransfer = async ({
       `SELECT p.name as prod_name, s.name as store_name, w.name as wh_name 
        FROM products p, stores s, warehouses w 
        WHERE p.id = $1 AND s.id = $2 AND w.id = $3`,
-      [productId, destinationId, sourceWarehouseId]
+      [safeProductId, safeDestId, safeSourceWh]
     );
     const prodName = metaRes.rows[0]?.prod_name || 'FMCG Product';
     const storeName = metaRes.rows[0]?.store_name || 'Store';
@@ -84,7 +92,7 @@ export const createTransfer = async ({
 
     broadcastTelegramAlert({
       title: `New Replenishment Request: ${transferNumber}`,
-      message: `🏪 *Store:* ${storeName}\n📦 *Product:* ${prodName}\n🔢 *Quantity:* ${quantity} units\n🏢 *Source:* ${whName}\n\nAwaiting Distribution Manager approval.`,
+      message: `🏪 *Store:* ${storeName}\n📦 *Product:* ${prodName}\n🔢 *Quantity:* ${safeQty} units\n🏢 *Source:* ${whName}\n\nAwaiting Distribution Manager approval.`,
       severity: 'INFO',
       link: 'http://localhost:5173/manager/transfers',
     }).catch(e => console.warn('[Telegram Auto-Alert Error]:', e.message));
