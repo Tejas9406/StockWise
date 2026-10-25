@@ -394,21 +394,34 @@ export const Recommendations = () => {
                       {/* Batch */}
                       <td className="py-3 px-4">
                         <span className="font-mono text-slate-900">{rec.batch_number || 'General Batch'}</span>
-                        {rec.batch_days_to_expiry !== undefined && (
+                        {rec.batch_days_to_expiry != null && !isNaN(Number(rec.batch_days_to_expiry)) ? (
                           <span
                             className={`block text-[10px] font-semibold ${
-                              rec.batch_days_to_expiry <= 14 ? 'text-rose-600' : 'text-slate-400'
+                              Number(rec.batch_days_to_expiry) <= 20
+                                ? 'text-rose-600'
+                                : Number(rec.batch_days_to_expiry) <= 45
+                                ? 'text-amber-600'
+                                : 'text-emerald-600'
                             }`}
                           >
                             {rec.batch_days_to_expiry} days to expiry
                           </span>
+                        ) : (
+                          <span className="block text-[10px] text-slate-400">Standard Shelf-life</span>
                         )}
                       </td>
 
                       {/* Recommended Qty */}
                       <td className="py-3 px-4">
-                        <span className="text-sm font-bold text-slate-900">{qty}</span>
-                        <span className="text-[10px] text-slate-400 ml-1">units</span>
+                        <div className="flex items-baseline">
+                          <span className="text-sm font-bold text-slate-900">{qty}</span>
+                          <span className="text-[10px] text-slate-400 ml-1">units</span>
+                        </div>
+                        {rec.forecast_value && (
+                          <span className="block text-[10px] text-emerald-700 font-medium">
+                            ML Demand: {rec.forecast_value} units
+                          </span>
+                        )}
                       </td>
 
                       {/* Status */}

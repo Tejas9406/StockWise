@@ -1,6 +1,7 @@
 import { parse } from 'csv-parse/sync';
 import { query } from '../config/db.js';
 import { runExpiryAutomationScan } from '../services/automationService.js';
+import { regenerateDynamicRecommendations } from '../services/dynamicRecommendationService.js';
 
 // ─── Default Templates & Column Synonyms ──────────────────────────────────────
 
@@ -456,38 +457,10 @@ export const confirmImport = async (req, res, next) => {
     // 1. Trigger automated expiry scanner
     runExpiryAutomationScan().catch((err) => console.error('[Post-Import Expiry Scan Error]:', err.message));
 
-    // 2. Auto-generate replenishment recommendations for low-stock stores
-    try {
-      const primaryWarehouseId = whRes.rows[0]?.id || 1;
-      const storeInventories = await query(`
-        SELECT i.product_id, i.store_id, i.quantity, p.reorder_point, p.min_safety_stock, p.name as product_name
-        FROM inventory i
-        JOIN products p ON i.product_id = p.id
-        WHERE i.location_type = 'STORE' AND i.quantity <= p.reorder_point
-      `);
-
-      for (const inv of storeInventories.rows) {
-        const needed = (inv.reorder_point * 2) - inv.quantity;
-        if (needed > 0) {
-          await query(`
-            INSERT INTO ai_recommendations 
-              (product_id, source_warehouse_id, destination_type, destination_id, quantity, transport_cost, expected_demand, reason, status, priority)
-            VALUES ($1, $2, 'STORE', $3, $4, 45.0, $5, $6, 'PENDING', $7)
-            ON CONFLICT DO NOTHING
-          `, [
-            inv.product_id,
-            primaryWarehouseId,
-            inv.store_id,
-            needed,
-            needed + inv.min_safety_stock,
-            `Dynamic Replenishment: ${inv.product_name} store stock (${inv.quantity}) breached reorder point (${inv.reorder_point}).`,
-            inv.quantity <= inv.min_safety_stock ? 'CRITICAL' : 'HIGH',
-          ]);
-        }
-      }
-    } catch (recErr) {
+    // 2. Auto-generate dynamic ML prediction-based replenishment recommendations
+    regenerateDynamicRecommendations().catch((recErr) => {
       console.warn('[Post-Import Recommendation Generator Notice]:', recErr.message);
-    }
+    });
 
     return res.status(200).json({
       success: true,
