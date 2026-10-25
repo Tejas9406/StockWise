@@ -77,7 +77,12 @@ export const PickList = () => {
         await fetchPickList();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to update pick status');
+      setIsPickModalOpen(false);
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || 'Failed to update pick status',
+        type: 'error',
+      });
     } finally {
       setSubmittingPick(false);
     }

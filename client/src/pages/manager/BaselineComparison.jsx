@@ -46,7 +46,7 @@ export const BaselineComparison = () => {
     fetchComparison();
   }, []);
 
-  if (loading) return <LoadingSpinner text="Evaluating Phase 1 Baseline vs Phase 2 PuLP AI Optimization..." />;
+  if (loading) return <LoadingSpinner text="Evaluating Traditional Planning vs Intelligent Supply Optimization..." />;
   if (error) return <ErrorState message={error} onRetry={fetchComparison} />;
   if (!data) return <div className="p-8 text-center text-slate-500">No comparison data available.</div>;
 
@@ -69,7 +69,7 @@ export const BaselineComparison = () => {
         expiry_waste_exposure_units?.baseline || 120,
         total_allocated_units?.baseline || 666,
       ],
-      name: 'Phase 1 Moving Average Baseline',
+      name: 'Traditional Heuristic Planning',
       type: 'bar',
       marker: { color: '#94a3b8' },
     },
@@ -81,7 +81,7 @@ export const BaselineComparison = () => {
         expiry_waste_exposure_units?.ai || 0,
         total_allocated_units?.ai || 925,
       ],
-      name: 'Phase 2 ML + PuLP MILP Plan',
+      name: 'StockWise Intelligent Optimization',
       type: 'bar',
       marker: { color: '#10b981' },
     },
@@ -101,11 +101,11 @@ export const BaselineComparison = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Baseline Plan vs AI Optimization</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Performance Comparison</h1>
             <Badge variant="emerald" dot>Real Calculations</Badge>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Head-to-head quantitative comparison: Phase 1 Moving Average Rule Plan vs Phase 2 ML Demand & PuLP Solver
+            Head-to-head quantitative benchmarking: Traditional Rule-Based Allocation vs StockWise Intelligent Distribution
           </p>
         </div>
 

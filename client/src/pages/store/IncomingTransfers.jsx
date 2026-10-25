@@ -19,8 +19,11 @@ export const IncomingTransfers = () => {
     setError(null);
     try {
       const res = await storeService.getIncomingTransfers();
-      if (res.success) {
-        setTransfers(res.data);
+      if (res && res.success) {
+        const list = Array.isArray(res.data) ? res.data : (res.data?.transfers || []);
+        setTransfers(list);
+      } else {
+        setTransfers([]);
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load incoming transfers');
@@ -55,7 +58,7 @@ export const IncomingTransfers = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Incoming Shipments & In-Transit Transfers</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Incoming Shipments &amp; In-Transit Transfers</h1>
           <p className="text-xs text-slate-500 mt-1">
             Track replenishment orders advancing through warehouse processing and freight transit
           </p>
@@ -74,7 +77,7 @@ export const IncomingTransfers = () => {
       </div>
 
       <Card noPadding>
-        {transfers.length === 0 ? (
+        {(!transfers || transfers.length === 0) ? (
           <EmptyState
             icon={Truck}
             title="No incoming shipments currently en route"
@@ -89,35 +92,35 @@ export const IncomingTransfers = () => {
                   <th className="py-3 px-4">Origin Warehouse</th>
                   <th className="py-3 px-4">Product Details</th>
                   <th className="py-3 px-4 text-right">Inbound Units</th>
-                  <th className="py-3 px-4">Carrier & Vehicle</th>
+                  <th className="py-3 px-4">Carrier &amp; Vehicle</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {transfers.map((t) => (
-                  <tr key={t._id} className="hover:bg-slate-50 transition-colors">
+                {transfers.map((t, idx) => (
+                  <tr key={t.id || t._id || idx} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3 px-4 font-bold text-slate-900 font-mono">
-                      {t.transferNumber}
+                      {t.transferNumber || 'TRF-PENDING'}
                     </td>
 
                     <td className="py-3 px-4 text-slate-800">
                       <div className="flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="font-semibold">{t.sourceWarehouseId?.name}</span>
+                        <span className="font-semibold">{t.sourceWarehouseId?.name || 'Central Hub'}</span>
                       </div>
-                      <span className="text-[10px] text-slate-400 block">{t.sourceWarehouseId?.location}</span>
+                      <span className="text-[10px] text-slate-400 block">{t.sourceWarehouseId?.location || 'Logistics Zone'}</span>
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-slate-900 block">{t.productId?.name}</span>
+                      <span className="font-semibold text-slate-900 block">{t.productId?.name || 'FMCG Product'}</span>
                       <span className="text-[10px] text-slate-400 font-mono">
-                        SKU: {t.productId?.sku} {t.batchId ? `• Batch: ${t.batchId?.batchNumber}` : ''}
+                        SKU: {t.productId?.sku || 'N/A'} {t.batchId ? `• Batch: ${t.batchId?.batchNumber}` : ''}
                       </span>
                     </td>
 
                     <td className="py-3 px-4 text-right font-extrabold text-emerald-600 text-sm">
-                      +{t.quantity.toLocaleString()} units
+                      +{(t.quantity || 0).toLocaleString()} units
                     </td>
 
                     <td className="py-3 px-4 text-slate-700">

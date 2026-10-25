@@ -100,7 +100,12 @@ export const Dispatch = () => {
         await fetchQueue();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to dispatch shipment');
+      setIsDispatchModalOpen(false);
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || 'Failed to dispatch shipment',
+        type: 'error',
+      });
     } finally {
       setSubmittingDispatch(false);
     }

@@ -68,7 +68,10 @@ export const QuickUploadModal = ({
     try {
       await importService.downloadTemplate(datasetType);
     } catch (err) {
-      alert('Template download failed: ' + (err.response?.data?.message || err.message));
+      setFeedback({
+        type: 'error',
+        message: 'Template download failed: ' + (err.response?.data?.message || err.message),
+      });
     }
   };
 

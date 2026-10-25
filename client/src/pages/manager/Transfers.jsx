@@ -99,7 +99,7 @@ export const Transfers = () => {
         setTransferTimeline(res.data.timeline || []);
       }
     } catch (err) {
-      alert('Failed to load transfer detail');
+      setToast({ show: true, message: 'Failed to load transfer detail', type: 'error' });
     } finally {
       setLoadingDetail(false);
     }
@@ -125,7 +125,7 @@ export const Transfers = () => {
         await fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Creation failed');
+      setToast({ show: true, message: err.response?.data?.message || err.message || 'Creation failed', type: 'error' });
     } finally {
       setSubmittingCreate(false);
     }
@@ -140,7 +140,7 @@ export const Transfers = () => {
         await fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Approval failed');
+      setToast({ show: true, message: err.response?.data?.message || err.message || 'Approval failed', type: 'error' });
     }
   };
 
@@ -156,7 +156,7 @@ export const Transfers = () => {
         await fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Cancellation failed');
+      setToast({ show: true, message: err.response?.data?.message || err.message || 'Cancellation failed', type: 'error' });
     }
   };
 

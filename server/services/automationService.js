@@ -317,6 +317,16 @@ export const runExpiryAutomationScan = async () => {
         });
         stats.whatsAppDispatched += 1;
       }
+
+      // 4. Automatic Telegram Broadcast
+      if (isCritical || batch.availableQuantity > 50) {
+        broadcastTelegramAlert({
+          title: `Stock Expiry Warning: ${batch.productName}`,
+          message: `🏷️ *Batch:* ${batch.batchNumber} (${batch.sku})\n🏢 *Warehouse:* ${batch.warehouseName}\n⚠️ *Available:* ${batch.availableQuantity} units\n⏳ *Expiry:* ${days} Days Remaining (${new Date(batch.expiryDate).toLocaleDateString()})\n\nAction: FEFO priority clearance recommended.`,
+          severity: isCritical ? 'CRITICAL' : 'WARNING',
+          link: 'http://localhost:5173/manager/recommendations',
+        }).catch(err => console.warn('[Telegram Expiry Broadcast Error]:', err.message));
+      }
     }
 
     return {

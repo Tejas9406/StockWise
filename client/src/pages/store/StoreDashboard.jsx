@@ -146,7 +146,7 @@ export const StoreDashboard = () => {
           <div className="space-y-4">
             <p className="text-xs text-slate-600 leading-relaxed">
               When warehouse logistics dispatches an order, it appears in your <strong>Receive Stock</strong> queue.
-              Verifying receipt automatically increases your store's on-shelf inventory in MongoDB.
+              Verifying receipt automatically increases your store's on-shelf inventory in the system.
             </p>
 
             <Link to="/store/receive" className="inline-block">
@@ -159,12 +159,12 @@ export const StoreDashboard = () => {
 
         <Card
           title="Store Point-of-Sale Transactions"
-          subtitle="Log real customer purchases to feed the demand forecasting pipeline"
+          subtitle="Log customer purchases to update demand trends and stock levels"
         >
           <div className="space-y-4">
             <p className="text-xs text-slate-600 leading-relaxed">
               Record daily customer sales. Each transaction decrements store inventory in real-time
-              and populates the dataset used by Phase 2 AI forecasting algorithms.
+              and updates automated replenishment and demand tracking.
             </p>
 
             <Link to="/store/sales" className="inline-block">

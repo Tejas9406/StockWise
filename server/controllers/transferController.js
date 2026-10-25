@@ -160,8 +160,10 @@ export const getTransferById = async (req, res, next) => {
 
 export const createTransfer = async (req, res, next) => {
   try {
+    const destinationId = req.body.destinationId || req.user?.storeId || 1;
     const transfer = await pgTransferService.createTransfer({
       ...req.body,
+      destinationId: parseInt(destinationId, 10),
       createdBy: req.user.id,
     });
     return res.status(201).json({

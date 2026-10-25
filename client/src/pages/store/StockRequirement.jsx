@@ -12,6 +12,7 @@ import { Toast } from '../../components/common/Toast';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
+import { useAuth } from '../../context/AuthContext';
 import {
   FileText,
   AlertTriangle,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 
 export const StockRequirement = () => {
+  const { user } = useAuth();
   const [requirements, setRequirements] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ export const StockRequirement = () => {
         productId: selectedReq.productId,
         sourceWarehouseId: requestWarehouseId,
         destinationType: 'STORE',
-        destinationId: undefined, // Controller will use storeId from store manager context or transfer body
+        destinationId: user?.storeId || 1,
         quantity: Number(requestQuantity),
         notes: requestNotes,
       });
@@ -89,13 +91,18 @@ export const StockRequirement = () => {
         setIsRequestModalOpen(false);
         setToast({
           show: true,
-          message: `Transfer request ${res.data?.transferNumber || ''} submitted to Distribution HQ!`,
+          message: `Replenishment order ${res.data?.transferNumber || ''} created successfully!`,
           type: 'success',
         });
         await fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to submit replenishment request');
+      setIsRequestModalOpen(false);
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || 'Failed to submit replenishment request',
+        type: 'error',
+      });
     } finally {
       setSubmittingRequest(false);
     }

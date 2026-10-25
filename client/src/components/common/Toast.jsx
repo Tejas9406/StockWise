@@ -21,6 +21,15 @@ export const Toast = ({ isVisible, message, type = 'success', onClose }) => {
   const config = configs[type] || configs.success;
   const Icon = config.icon;
 
+  React.useEffect(() => {
+    if (isVisible && onClose) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
   return (
     <AnimatePresence>
       {isVisible && (

@@ -1,4 +1,5 @@
 import { query, runTransaction } from '../config/db.js';
+import { broadcastTelegramAlert } from './telegramService.js';
 
 /**
  * Generate human-readable transfer tracking number
@@ -62,12 +63,31 @@ export const createTransfer = async ({
       [transfer.id, createdBy, JSON.stringify({ status: 'PENDING', quantity }), notes || 'Transfer request initiated']
     );
 
-    // 4. Notify Managers
+    // 4. Notify Managers & Warehouse Hub
     await client.query(
       `INSERT INTO notifications (role, title, message, type, link)
-       VALUES ('DISTRIBUTION_MANAGER', 'New Transfer Request Created', $1, 'INFO', '/manager/transfers')`,
+       VALUES ('DISTRIBUTION_MANAGER', 'New Transfer Request Created', $1, 'INFO', '/manager/transfers'),
+              ('WAREHOUSE_STAFF', 'New Transfer Request Pending', $1, 'INFO', '/warehouse/picklist')`,
       [`Transfer ${transferNumber} for ${quantity} units awaits approval.`]
     );
+
+    // Broadcast automatic notification to Telegram bot
+    const metaRes = await client.query(
+      `SELECT p.name as prod_name, s.name as store_name, w.name as wh_name 
+       FROM products p, stores s, warehouses w 
+       WHERE p.id = $1 AND s.id = $2 AND w.id = $3`,
+      [productId, destinationId, sourceWarehouseId]
+    );
+    const prodName = metaRes.rows[0]?.prod_name || 'FMCG Product';
+    const storeName = metaRes.rows[0]?.store_name || 'Store';
+    const whName = metaRes.rows[0]?.wh_name || 'Warehouse Hub';
+
+    broadcastTelegramAlert({
+      title: `New Replenishment Request: ${transferNumber}`,
+      message: `🏪 *Store:* ${storeName}\n📦 *Product:* ${prodName}\n🔢 *Quantity:* ${quantity} units\n🏢 *Source:* ${whName}\n\nAwaiting Distribution Manager approval.`,
+      severity: 'INFO',
+      link: 'http://localhost:5173/manager/transfers',
+    }).catch(e => console.warn('[Telegram Auto-Alert Error]:', e.message));
 
     return transfer;
   });
@@ -159,6 +179,14 @@ export const approveTransfer = async (transferId, userId, reason = 'Approved by 
        VALUES ('WAREHOUSE', $1, 'Transfer Approved for Picking', $2, 'ACTION_REQUIRED', '/warehouse/pick-list')`,
       [transfer.source_warehouse_id, `Transfer ${transfer.transfer_number} approved (${targetQuantity} units). Ready for pick list.`]
     );
+
+    // Automatic Telegram broadcast
+    broadcastTelegramAlert({
+      title: `Transfer Approved: ${transfer.transfer_number}`,
+      message: `✅ *Approved:* ${transfer.transfer_number}\n📦 *Product:* ${transfer.product_name}\n🔢 *Quantity:* ${targetQuantity} units\n🏢 *Hub:* ${transfer.warehouse_name}\n\nStock reserved and ready for warehouse pick list.`,
+      severity: 'INFO',
+      link: 'http://localhost:5173/warehouse/picklist',
+    }).catch(e => console.warn('[Telegram Auto-Alert Error]:', e.message));
 
     return updatedTransfer;
   });
@@ -329,6 +357,14 @@ export const markTransferDispatched = async (transferId, userId, { carrier = 'In
       );
     }
 
+    // Automatic Telegram broadcast
+    broadcastTelegramAlert({
+      title: `Shipment In Transit: ${transfer.transfer_number}`,
+      message: `🚚 *Shipment Dispatched*\nTransfer ${transfer.transfer_number} with ${transfer.quantity} units is in transit via ${carrier} (${vehicleNumber || 'Standard'}).`,
+      severity: 'INFO',
+      link: 'http://localhost:5173/store/incoming',
+    }).catch(e => console.warn('[Telegram Auto-Alert Error]:', e.message));
+
     return updatedRes.rows[0];
   });
 };
@@ -422,6 +458,14 @@ export const receiveTransfer = async (transferId, userId, notes = '') => {
        VALUES ('DISTRIBUTION_MANAGER', 'Transfer Completed', $1, 'SUCCESS', '/manager/transfers')`,
       [`Transfer ${transfer.transfer_number} successfully received at destination store.`]
     );
+
+    // Automatic Telegram broadcast
+    broadcastTelegramAlert({
+      title: `Delivery Confirmed: ${transfer.transfer_number}`,
+      message: `📦 *Delivery Received*\nTransfer ${transfer.transfer_number} with ${transfer.quantity} units safely verified and stocked into store inventory.`,
+      severity: 'INFO',
+      link: 'http://localhost:5173/store/inventory',
+    }).catch(e => console.warn('[Telegram Auto-Alert Error]:', e.message));
 
     return updatedRes.rows[0];
   });

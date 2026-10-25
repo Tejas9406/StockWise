@@ -141,7 +141,7 @@ export const SalesHistory = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Store Sales History</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Historical point-of-sale transactions feeding the Phase 2 demand forecasting algorithms
+            Historical point-of-sale customer transactions and daily store consumption logs
           </p>
         </div>
 

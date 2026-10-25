@@ -26,8 +26,8 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
-      // Poll every 30 seconds for live updates
-      const interval = setInterval(fetchNotifications, 30000);
+      // Poll every 8 seconds for rapid cross-module updates
+      const interval = setInterval(fetchNotifications, 8000);
       return () => clearInterval(interval);
     } else {
       setNotifications([]);
