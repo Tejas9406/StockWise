@@ -1,0 +1,34 @@
+services:
+  # 1. Python FastAPI AIML Microservice
+  - type: web
+    name: stockwise-ml
+    runtime: python
+    rootDir: ml-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+
+  # 2. Node.js Express Backend Gateway
+  - type: web
+    name: stockwise-server
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: FASTAPI_URL
+        sync: false
+      - key: AIML_SERVICE_URL
+        sync: false
